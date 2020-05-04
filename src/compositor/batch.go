@@ -99,7 +99,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 					return err
 				}
 			case "scale":
-				src, err := magica.FromFile(op.File)
+				src, err := magica.FromFile(voxelDirectory + op.File)
 				if err != nil {
 					return err
 				}
@@ -108,7 +108,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 					return err
 				}
 			case "repeat":
-				src, err := magica.FromFile(op.File)
+				src, err := magica.FromFile(voxelDirectory + op.File)
 				if err != nil {
 					return err
 				}
