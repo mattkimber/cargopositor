@@ -31,8 +31,8 @@ func (v *VoxelObject) writeHeader(handle io.Writer) (err error) {
 }
 
 func (v *VoxelObject) writeMainChunk(handle io.Writer) (err error) {
-	mainLen := 52 + len(v.GetPoints()) * 4 + len(v.PaletteData)
-	err = writeChunkHeaderWithChildLength(handle,"MAIN", 0, mainLen)
+	mainLen := 52 + len(v.GetPoints())*4 + len(v.PaletteData)
+	err = writeChunkHeaderWithChildLength(handle, "MAIN", 0, mainLen)
 	return
 }
 
@@ -49,13 +49,13 @@ func (v *VoxelObject) writeSizeChunk(handle io.Writer) (err error) {
 		return err
 	}
 
-	err = binary.Write(handle, binary.LittleEndian, []int32{ int32(v.Size.X), int32(v.Size.Y), int32(v.Size.Z) })
+	err = binary.Write(handle, binary.LittleEndian, []int32{int32(v.Size.X), int32(v.Size.Y), int32(v.Size.Z)})
 	return
 }
 
 func (v *VoxelObject) writeXYZIChunk(handle io.Writer) (err error) {
 	points := v.GetPoints()
-	if err := writeChunkHeaderWithChildLength(handle, "XYZI", (len(points)*4) + 4, 0); err != nil {
+	if err := writeChunkHeaderWithChildLength(handle, "XYZI", (len(points)*4)+4, 0); err != nil {
 		return err
 	}
 
@@ -72,9 +72,8 @@ func (v *VoxelObject) writeXYZIChunk(handle io.Writer) (err error) {
 	return
 }
 
-
 func (v *VoxelObject) Save(handle io.Writer) (err error) {
-	fns := []func(writer io.Writer) error{v.writeHeader, v.writeMainChunk, v.writeSizeChunk, v.writeXYZIChunk, v.writePalette }
+	fns := []func(writer io.Writer) error{v.writeHeader, v.writeMainChunk, v.writeSizeChunk, v.writeXYZIChunk, v.writePalette}
 	for _, fn := range fns {
 		if err := fn(handle); err != nil {
 			return err

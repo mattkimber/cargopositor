@@ -11,7 +11,6 @@ import (
 
 const magic = "VOX "
 
-
 func isHeaderValid(handle io.Reader) bool {
 	result, err := getChunkHeader(handle)
 	return err == nil && result == magic

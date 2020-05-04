@@ -7,8 +7,8 @@ import (
 
 func TestVoxelObject_GetPoints(t *testing.T) {
 	v := VoxelObject{
-		Size: geometry.Point{X: 1, Y: 1, Z: 2},
-		Voxels: [][][]byte{{{254,255}}},
+		Size:   geometry.Point{X: 1, Y: 1, Z: 2},
+		Voxels: [][][]byte{{{254, 255}}},
 	}
 
 	points := v.GetPoints()

@@ -108,11 +108,11 @@ func TestGetPointDataFromChunk(t *testing.T) {
 }
 
 func Test_getPaletteDataFromChunk(t *testing.T) {
-	testCases := []struct{
-		input []byte
+	testCases := []struct {
+		input    []byte
 		expected []byte
 	}{
-		{getSizedByteSlice(4, []byte{1,2,3,4}), []byte{1,2,3,4}},
+		{getSizedByteSlice(4, []byte{1, 2, 3, 4}), []byte{1, 2, 3, 4}},
 	}
 
 	for _, tc := range testCases {

@@ -1,7 +1,10 @@
 package utils
 
 import (
+	"bytes"
 	"geometry"
+	"io/ioutil"
+	"os"
 )
 
 func Make3DByteSlice(size geometry.Point) [][][]byte {
@@ -15,4 +18,22 @@ func Make3DByteSlice(size geometry.Point) [][][]byte {
 	}
 
 	return result
+}
+
+func CompareToFile(data []byte, filename string) (bool, error) {
+	handle, err := os.Open(filename)
+	if err != nil {
+		return false, err
+	}
+
+	expected, err := ioutil.ReadAll(handle)
+	if err != nil {
+		return false, err
+	}
+
+	if !bytes.Equal(data, expected) {
+		return false, nil
+	}
+
+	return true, nil
 }

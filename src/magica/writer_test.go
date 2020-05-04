@@ -2,9 +2,9 @@ package magica
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"testing"
+	"utils"
 )
 
 func TestVoxelObject_Save(t *testing.T) {
@@ -27,17 +27,12 @@ func TestVoxelObject_Save(t *testing.T) {
 		t.Errorf("Could not save object: %v", err)
 	}
 
-	handle, err = os.Open("testdata/test_cube_output.vox")
-	if err != nil {
-		t.Errorf("Could not open expected output file: %v", err)
-	}
-
-	expected, err := ioutil.ReadAll(handle)
+	result, err := utils.CompareToFile(buf.Bytes(), "testdata/test_cube_output.vox")
 	if err != nil {
 		t.Errorf("Could not read expected output file: %v", err)
 	}
 
-	if !bytes.Equal(buf.Bytes(), expected) {
+	if !result {
 		t.Errorf("Output did not equal expected")
 	}
 }
