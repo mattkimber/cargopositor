@@ -6,6 +6,7 @@ import (
 	"geometry"
 	"io"
 	"io/ioutil"
+	"os"
 	"utils"
 )
 
@@ -171,4 +172,22 @@ func GetMagicaVoxelObject(handle io.Reader) (VoxelObject, error) {
 func GetFromReader(handle io.Reader) (v VoxelObject, err error) {
 	v, err = GetMagicaVoxelObject(handle)
 	return
+}
+
+func FromFile(filename string) (v VoxelObject, err error) {
+	handle, err := os.Open(filename)
+	if err != nil {
+		return VoxelObject{}, err
+	}
+
+	v, err = GetFromReader(handle)
+	if err != nil {
+		return v, err
+	}
+
+	if err := handle.Close(); err != nil {
+		return v, err
+	}
+
+	return v, nil
 }
