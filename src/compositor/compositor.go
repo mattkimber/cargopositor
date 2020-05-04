@@ -124,7 +124,7 @@ func AddRepeated(v magica.VoxelObject, src magica.VoxelObject, n int, inputRamp,
 			col := (dstBounds.Max.X - x) / srcSize.X
 			row := (z - dstBounds.Min.Z) / srcSize.Z
 
-			sx := (dstBounds.Max.X - x) % srcSize.X
+			sx := srcSize.X - 1 - ((dstBounds.Max.X - x) % srcSize.X)
 			sy := (y - dstBounds.Min.Y) % srcSize.Y
 			sz := (z - dstBounds.Min.Z) % srcSize.Z
 
