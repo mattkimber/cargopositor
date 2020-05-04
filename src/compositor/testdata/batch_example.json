@@ -6,7 +6,8 @@
     {
       "name": "empty",
       "type": "produce_empty",
-      "file": ""
+      "file": "",
+      "input_ramp": "20,30"
     }
   ]
 }

@@ -7,6 +7,31 @@
       "name": "_empty",
       "type": "produce_empty",
       "file": ""
+    },
+    {
+      "name": "_iron",
+      "type": "scale",
+      "file": "samples/bulk_cargo.vox",
+      "input_ramp": "3,12",
+      "output_ramp": "72,79"
+    },
+    {
+      "name": "_grain",
+      "type": "scale",
+      "file": "samples/bulk_cargo.vox",
+      "input_ramp": "3,12",
+      "output_ramp": "56,60"
+    },
+    {
+      "name": "_crates_5",
+      "type": "repeat",
+      "file": "samples/crate.vox",
+      "n": 5
+    },
+    {
+      "name": "_crates_all",
+      "type": "repeat",
+      "file": "samples/crate.vox"
     }
   ]
 }

@@ -16,9 +16,12 @@ type Batch struct {
 }
 
 type Operation struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
-	File string `json:"file"`
+	Name             string `json:"name"`
+	Type             string `json:"type"`
+	File             string `json:"file"`
+	InputColourRamp  string `json:"input_ramp"`
+	OutputColourRamp string `json:"output_ramp"`
+	N                int    `json:"n"`
 }
 
 func FromJson(handle io.Reader) (b Batch, err error) {
@@ -83,6 +86,24 @@ func (b *Batch) Run() error {
 			switch op.Type {
 			case "produce_empty":
 				output := ProduceEmpty(input)
+				if err := saveFile(&output, getOutputFileName(f, op.Name)); err != nil {
+					return err
+				}
+			case "scale":
+				src, err := magica.FromFile(op.File)
+				if err != nil {
+					return err
+				}
+				output := AddScaled(input, src, op.InputColourRamp, op.OutputColourRamp)
+				if err := saveFile(&output, getOutputFileName(f, op.Name)); err != nil {
+					return err
+				}
+			case "repeat":
+				src, err := magica.FromFile(op.File)
+				if err != nil {
+					return err
+				}
+				output := AddRepeated(input, src, op.N, op.InputColourRamp, op.OutputColourRamp)
 				if err := saveFile(&output, getOutputFileName(f, op.Name)); err != nil {
 					return err
 				}

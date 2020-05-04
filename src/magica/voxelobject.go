@@ -1,6 +1,9 @@
 package magica
 
-import "geometry"
+import (
+	"geometry"
+	"utils"
+)
 
 type VoxelData [][][]byte
 
@@ -33,6 +36,19 @@ func (v *VoxelObject) GetPoints() (result []geometry.PointWithColour) {
 	})
 
 	return result
+}
+
+func (v *VoxelObject) Copy() (result VoxelObject) {
+	result = VoxelObject{}
+
+	result.Size = v.Size
+	// We don't do anything with the palette data, so a shallow copy is okay
+	result.PaletteData = v.PaletteData
+
+	result.Voxels = utils.Make3DByteSlice(v.Size)
+	v.Iterate(func(x, y, z int) { result.Voxels[x][y][z] = v.Voxels[x][y][z] })
+
+	return
 }
 
 func (v *VoxelObject) Iterate(iterator func(int, int, int)) {
