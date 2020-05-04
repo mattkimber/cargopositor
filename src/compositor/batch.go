@@ -8,7 +8,6 @@ import (
 	"magica"
 	"os"
 	"strings"
-	"sync"
 )
 
 type Batch struct {
@@ -85,70 +84,43 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 		outputDirectory = outputDirectory + "/"
 	}
 
-	var wg sync.WaitGroup
-	errors := make(chan error)
-
 	for _, f := range b.Files {
 		input, err := magica.FromFile(voxelDirectory + f)
 		if err != nil {
 			return err
 		}
 
-		wg.Add(len(b.Operations))
-
 		for _, op := range b.Operations {
+
 			switch op.Type {
 			case "produce_empty":
-				go func() {
-					output := ProduceEmpty(input)
-					if err := saveFile(&output, getOutputFileName(outputDirectory+f, op.Name)); err != nil {
-						errors <- err
-					}
-					wg.Done()
-				}()
+				output := ProduceEmpty(input)
+				if err := saveFile(&output, getOutputFileName(outputDirectory+f, op.Name)); err != nil {
+					return err
+				}
 			case "scale":
-				go func() {
-					src, err := magica.FromFile(op.File)
-					if err != nil {
-						errors <- err
-						wg.Done()
-						return
-					}
-					output := AddScaled(input, src, op.InputColourRamp, op.OutputColourRamp)
-					if err := saveFile(&output, getOutputFileName(outputDirectory+f, op.Name)); err != nil {
-						errors <- err
-					}
-					wg.Done()
-				}()
+				src, err := magica.FromFile(op.File)
+				if err != nil {
+					return err
+				}
+				output := AddScaled(input, src, op.InputColourRamp, op.OutputColourRamp)
+				if err := saveFile(&output, getOutputFileName(outputDirectory+f, op.Name)); err != nil {
+					return err
+				}
 			case "repeat":
-				go func() {
-					src, err := magica.FromFile(op.File)
-					if err != nil {
-						errors <- err
-						wg.Done()
-						return
-					}
-					output := AddRepeated(input, src, op.N, op.InputColourRamp, op.OutputColourRamp)
-					if err := saveFile(&output, getOutputFileName(outputDirectory+f, op.Name)); err != nil {
-						errors <- err
-					}
-					wg.Done()
-				}()
+				src, err := magica.FromFile(op.File)
+				if err != nil {
+					return err
+				}
+				output := AddRepeated(input, src, op.N, op.InputColourRamp, op.OutputColourRamp)
+				if err := saveFile(&output, getOutputFileName(outputDirectory+f, op.Name)); err != nil {
+					return err
+				}
 			default:
-				go func(){
-					errors <- fmt.Errorf("unkown operation %s", op.Type)
-					wg.Done()
-				}()
+				return fmt.Errorf("unkown operation %s", op.Type)
 			}
 		}
 	}
 
-	wg.Wait()
-	if len(errors) > 0 {
-		err = <- errors
-	}
-
-	close(errors)
-
-	return err
+	return
 }

@@ -1,6 +1,7 @@
 package magica
 
 import (
+	"bufio"
 	"encoding/binary"
 	"io"
 )
@@ -73,11 +74,13 @@ func (v *VoxelObject) writeXYZIChunk(handle io.Writer) (err error) {
 }
 
 func (v *VoxelObject) Save(handle io.Writer) (err error) {
+	bw := bufio.NewWriter(handle)
 	fns := []func(writer io.Writer) error{v.writeHeader, v.writeMainChunk, v.writeSizeChunk, v.writeXYZIChunk, v.writePalette}
 	for _, fn := range fns {
-		if err := fn(handle); err != nil {
+		if err := fn(bw); err != nil {
 			return err
 		}
 	}
+	bw.Flush()
 	return
 }
