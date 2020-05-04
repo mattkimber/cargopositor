@@ -9,7 +9,7 @@ func TestFromFile(t *testing.T) {
 	batch, err := FromFile("testdata/batch_example.json")
 	expected := Batch{
 		Files:      []string{"example_input.vox"},
-		Operations: []Operation{{File: "", Type: "produce_empty"}},
+		Operations: []Operation{{Name: "empty", File: "", Type: "produce_empty"}},
 	}
 
 	if err != nil {

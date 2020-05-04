@@ -1,10 +1,10 @@
 {
   "files": [
-    "example_input.vox"
+    "samples/truck.vox"
   ],
   "operations": [
     {
-      "name": "empty",
+      "name": "_empty",
       "type": "produce_empty",
       "file": ""
     }
