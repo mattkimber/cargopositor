@@ -75,9 +75,17 @@ func saveFile(v *magica.VoxelObject, filename string) error {
 	return err
 }
 
-func (b *Batch) Run() error {
+func (b *Batch) Run(outputDirectory, voxelDirectory string) error {
+	if len(voxelDirectory) > 0 && !strings.HasSuffix(voxelDirectory, "/") {
+		voxelDirectory = voxelDirectory + "/"
+	}
+
+	if len(outputDirectory) > 0 && !strings.HasSuffix(outputDirectory, "/") {
+		outputDirectory = outputDirectory + "/"
+	}
+
 	for _, f := range b.Files {
-		input, err := magica.FromFile(f)
+		input, err := magica.FromFile(voxelDirectory + f)
 		if err != nil {
 			return err
 		}
@@ -86,7 +94,7 @@ func (b *Batch) Run() error {
 			switch op.Type {
 			case "produce_empty":
 				output := ProduceEmpty(input)
-				if err := saveFile(&output, getOutputFileName(f, op.Name)); err != nil {
+				if err := saveFile(&output, getOutputFileName(outputDirectory+f, op.Name)); err != nil {
 					return err
 				}
 			case "scale":
@@ -95,7 +103,7 @@ func (b *Batch) Run() error {
 					return err
 				}
 				output := AddScaled(input, src, op.InputColourRamp, op.OutputColourRamp)
-				if err := saveFile(&output, getOutputFileName(f, op.Name)); err != nil {
+				if err := saveFile(&output, getOutputFileName(outputDirectory+f, op.Name)); err != nil {
 					return err
 				}
 			case "repeat":
@@ -104,7 +112,7 @@ func (b *Batch) Run() error {
 					return err
 				}
 				output := AddRepeated(input, src, op.N, op.InputColourRamp, op.OutputColourRamp)
-				if err := saveFile(&output, getOutputFileName(f, op.Name)); err != nil {
+				if err := saveFile(&output, getOutputFileName(outputDirectory+f, op.Name)); err != nil {
 					return err
 				}
 			default:
