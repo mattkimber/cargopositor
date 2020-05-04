@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"magica"
 	"os"
+	"path"
 	"strings"
 )
 
@@ -50,7 +51,11 @@ func FromFile(filename string) (b Batch, err error) {
 	return
 }
 
-func getOutputFileName(filename, suffix string) string {
+func getOutputFileName(directory, filename, suffix string) string {
+	if len(directory) > 0 {
+		filename = directory + path.Base(filename)
+	}
+
 	lastExtension := strings.LastIndex(filename, ".")
 	if lastExtension != -1 {
 		return filename[:lastExtension] + suffix + ".vox"
@@ -95,7 +100,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 			switch op.Type {
 			case "produce_empty":
 				output := ProduceEmpty(input)
-				if err := saveFile(&output, getOutputFileName(outputDirectory+f, op.Name)); err != nil {
+				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
 					return err
 				}
 			case "scale":
@@ -104,7 +109,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 					return err
 				}
 				output := AddScaled(input, src, op.InputColourRamp, op.OutputColourRamp)
-				if err := saveFile(&output, getOutputFileName(outputDirectory+f, op.Name)); err != nil {
+				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
 					return err
 				}
 			case "repeat":
@@ -113,7 +118,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 					return err
 				}
 				output := AddRepeated(input, src, op.N, op.InputColourRamp, op.OutputColourRamp)
-				if err := saveFile(&output, getOutputFileName(outputDirectory+f, op.Name)); err != nil {
+				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
 					return err
 				}
 			default:
