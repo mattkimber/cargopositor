@@ -1,0 +1,11 @@
+{
+  "files": [
+    "example_input.vox"
+  ],
+  "operations": [
+    {
+      "type":  "produce_empty",
+      "file": ""
+    }
+  ]
+}
