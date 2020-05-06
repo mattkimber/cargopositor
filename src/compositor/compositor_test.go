@@ -49,6 +49,7 @@ func TestAddRepeated(t *testing.T) {
 	testAddRepeatedInner(t, 2, "testdata/example_small.vox", "testdata/repeated_small.vox")
 	testAddRepeatedInner(t, 6, "testdata/example_tiny.vox", "testdata/repeated_tiny.vox")
 	testAddRepeatedInner(t, 0, "testdata/example_tiny.vox", "testdata/repeated_tiny_no_limit.vox")
+	testAddRepeatedInner(t, 1, "testdata/example_centred.vox", "testdata/repeated_tiny_centred.vox")
 }
 
 func testAddRepeatedInner(t *testing.T, n int, input, expected string) {
