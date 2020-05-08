@@ -113,3 +113,18 @@ ramp when these are present.
 
 An example JSON file with several operations configured can be found in
 the `samples` directory.
+
+### Tips and Tricks
+
+Although any voxels with colour 255 will be cleared from the main voxel
+object when compositing, if they are present in the **cargo** they will
+be kept.
+
+This allows for the creation of multi-pass setups, where a vehicle chassis
+is first composited with various bodies, and each body is then
+composited with the appropriate cargo.
+
+![Demo image.](img/multipass.png)
+
+In the above example, a large number of different vehicles could potentially
+be produced by changing only the leftmost "base" truck object.
