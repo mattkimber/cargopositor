@@ -3,6 +3,7 @@ package compositor
 import (
 	"encoding/json"
 	"fmt"
+	"geometry"
 	"io"
 	"io/ioutil"
 	"magica"
@@ -17,12 +18,13 @@ type Batch struct {
 }
 
 type Operation struct {
-	Name             string `json:"name"`
-	Type             string `json:"type"`
-	File             string `json:"file"`
-	InputColourRamp  string `json:"input_ramp"`
-	OutputColourRamp string `json:"output_ramp"`
-	N                int    `json:"n"`
+	Name             string          `json:"name"`
+	Type             string          `json:"type"`
+	File             string          `json:"file"`
+	InputColourRamp  string          `json:"input_ramp"`
+	OutputColourRamp string          `json:"output_ramp"`
+	N                int             `json:"n"`
+	Scale            geometry.PointF `json:"scale""`
 }
 
 func FromJson(handle io.Reader) (b Batch, err error) {
@@ -108,7 +110,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 				if err != nil {
 					return err
 				}
-				output := AddScaled(input, src, op.InputColourRamp, op.OutputColourRamp)
+				output := AddScaled(input, src, op.InputColourRamp, op.OutputColourRamp, op.Scale)
 				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
 					return err
 				}

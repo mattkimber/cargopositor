@@ -58,6 +58,27 @@ Scales the input across the cargo area. This is most useful for bulk cargo
 and other cargoes which do not suffer adversely from being stretched in
 dimensions.
 
+Sometimes it may not be desirable to scale the object in all dimensions
+across the available area, so this can be reduced by adding a `scale`
+directive to the operation:
+
+```json
+"scale": {
+    "x": 0.0,
+    "y": 0.5,
+    "z": 1.0
+}
+```
+
+The value determines how much of the original source object's size to
+preserve. `1.0` means to preserve completely the original size, and `0.0`
+means to use the scaled size, with values between interpolated linearly.
+
+If the source object is larger than the destination and a scaling value
+other than `0.0` is used it will be clipped, ultimately turning scale 
+into a `repeat` operation with `n = 1` that will copy objects
+larger than the destination area.
+
 Supports recolouring.
 
 #### repeat

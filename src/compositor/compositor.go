@@ -56,7 +56,7 @@ func ProduceEmpty(v magica.VoxelObject) (r magica.VoxelObject) {
 }
 
 // Scale a cargo object to the cargo area
-func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamp, outputRamp string) (r magica.VoxelObject) {
+func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamp, outputRamp string, scaleLogic geometry.PointF) (r magica.VoxelObject) {
 	r = dst.Copy()
 
 	src = Recolour(src, inputRamp, outputRamp)
@@ -64,15 +64,21 @@ func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamp, output
 	srcBounds := geometry.Bounds{Min: geometry.Point{}, Max: geometry.Point{X: src.Size.X, Y: src.Size.Y, Z: src.Size.Z}}
 	srcSize, dstSize := srcBounds.GetSize(), dstBounds.GetSize()
 
+	scale := geometry.PointF{
+		X: ((float64(srcSize.X) / float64(dstSize.X+1)) * (1 - scaleLogic.X)) + scaleLogic.X,
+		Y: (float64(srcSize.Y)/float64(dstSize.Y+1))*(1-scaleLogic.Y) + scaleLogic.Y,
+		Z: (float64(srcSize.Z)/float64(dstSize.Z+1))*(1-scaleLogic.Z) + scaleLogic.Z,
+	}
+
 	iterator := func(x, y, z int) {
 		if r.Voxels[x][y][z] == 255 {
-			minX := byte(math.Floor(float64(x-dstBounds.Min.X) * (float64(srcSize.X) / float64(dstSize.X+1))))
-			minY := byte(math.Floor(float64(y-dstBounds.Min.Y) * (float64(srcSize.Y) / float64(dstSize.Y+1))))
-			minZ := byte(math.Floor(float64(z-dstBounds.Min.Z) * (float64(srcSize.Z) / float64(dstSize.Z+1))))
+			minX := byte(math.Floor(float64(x-dstBounds.Min.X) * scale.X))
+			minY := byte(math.Floor(float64(y-dstBounds.Min.Y) * scale.Y))
+			minZ := byte(math.Floor(float64(z-dstBounds.Min.Z) * scale.Z))
 
-			maxX := byte(math.Ceil(float64((x+1)-dstBounds.Min.X) * (float64(srcSize.X) / float64(dstSize.X+1))))
-			maxY := byte(math.Ceil(float64((y+1)-dstBounds.Min.Y) * (float64(srcSize.Y) / float64(dstSize.Y+1))))
-			maxZ := byte(math.Ceil(float64((z+1)-dstBounds.Min.Z) * (float64(srcSize.Z) / float64(dstSize.Z+1))))
+			maxX := byte(math.Ceil(float64((x+1)-dstBounds.Min.X) * scale.X))
+			maxY := byte(math.Ceil(float64((y+1)-dstBounds.Min.Y) * scale.Y))
+			maxZ := byte(math.Ceil(float64((z+1)-dstBounds.Min.Z) * scale.Z))
 
 			values := map[byte]int{}
 			max, modalIndex := 0, byte(0)
@@ -81,9 +87,11 @@ func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamp, output
 				for j := minY; j < maxY; j++ {
 					for k := minZ; k < maxZ; k++ {
 
-						c := src.Voxels[i][j][k]
-						if c != 0 {
-							values[c]++
+						if i < byte(srcBounds.Max.X) && j < byte(srcBounds.Max.Y) && k < byte(srcBounds.Max.Z) {
+							c := src.Voxels[i][j][k]
+							if c != 0 {
+								values[c]++
+							}
 						}
 					}
 				}

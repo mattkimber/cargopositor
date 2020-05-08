@@ -35,13 +35,27 @@ func Test_getBounds(t *testing.T) {
 	}
 }
 
+func TestAddScaledWithSize(t *testing.T) {
+	src, err := magica.FromFile("testdata/2by2.vox")
+	if err != nil {
+		t.Errorf("Could not read object: %v", err)
+	}
+
+	fn := func(v magica.VoxelObject) magica.VoxelObject {
+		return AddScaled(v, src, "2,16", "72,79", geometry.PointF{X: 1.0, Z: 1.0})
+	}
+	testOperation(t, fn, "testdata/not_scaled.vox")
+}
+
 func TestAddScaled(t *testing.T) {
 	src, err := magica.FromFile("testdata/example_cargo.vox")
 	if err != nil {
 		t.Errorf("Could not read object: %v", err)
 	}
 
-	fn := func(v magica.VoxelObject) magica.VoxelObject { return AddScaled(v, src, "2,16", "72,79") }
+	fn := func(v magica.VoxelObject) magica.VoxelObject {
+		return AddScaled(v, src, "2,16", "72,79", geometry.PointF{})
+	}
 	testOperation(t, fn, "testdata/scaled.vox")
 }
 

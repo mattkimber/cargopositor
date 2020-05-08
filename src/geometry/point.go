@@ -9,6 +9,10 @@ type PointWithColour struct {
 	Colour byte
 }
 
+type PointF struct {
+	X, Y, Z float64
+}
+
 type Bounds struct {
 	Min, Max Point
 }
