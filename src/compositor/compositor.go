@@ -130,7 +130,7 @@ func AddRepeated(v magica.VoxelObject, src magica.VoxelObject, n int, inputRamp,
 
 	iterator := func(x, y, z int) {
 		if r.Voxels[x][y][z] == 255 {
-			item := (y - dstBounds.Min.Y) / srcSize.Y
+			item := ((y - yOffset) - dstBounds.Min.Y) / srcSize.Y
 			col := (dstBounds.Max.X - x) / srcSize.X
 			row := (z - dstBounds.Min.Z) / srcSize.Z
 
