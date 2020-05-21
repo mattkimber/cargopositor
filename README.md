@@ -92,6 +92,35 @@ the number of repeated items.
 
 Supports recolouring.
 
+#### stairstep
+
+Increases `m` steps in z (vertical) dimension for every `n` steps in x (horizontal).
+Stairstep takes an input like this:
+
+![Before.](img/stairs_before.png)
+
+And produces an output like this:
+
+![After.](img/stairs_after.png)
+
+There are two parameters for this operation:
+
+* `x_steps`: The number of steps to take in `x` before moving up the staircase
+* `z_steps`: The number of steps to take in `z` at each step up
+
+#### Ignore Mask
+
+Sometimes you just want to combine two objects without using a mask.
+If this is the case, add the following property to the operation:
+
+```json
+"ignore_mask": true
+```
+
+Objects will be copied starting at 0,0. Only empty voxels will be overwritten -
+therefore changin the order in which operations are applied (source and destination)
+will produce different results.
+
 #### Recolouring
 
 Recolouring is not an operation in itself but is supported by some of

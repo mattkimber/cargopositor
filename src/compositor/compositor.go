@@ -7,9 +7,14 @@ import (
 	"utils"
 )
 
-func getBounds(v *magica.VoxelObject) geometry.Bounds {
-	min := geometry.Point{X: 255, Y: 255, Z: 255}
+func getBounds(v *magica.VoxelObject, ignoreMask bool) geometry.Bounds {
+
+	min := geometry.Point{X: v.Size.X, Y: v.Size.Y, Z: v.Size.Z}
 	max := geometry.Point{}
+
+	if ignoreMask {
+		return geometry.Bounds{Min: max, Max: min}
+	}
 
 	iterator := func(x, y, z int) {
 		if v.Voxels[x][y][z] == 255 {
@@ -55,12 +60,40 @@ func ProduceEmpty(v magica.VoxelObject) (r magica.VoxelObject) {
 	return r
 }
 
+// Stairstep the base object (for every m steps in x, move n steps in z)
+func Stairstep(v magica.VoxelObject, m, n int) (r magica.VoxelObject) {
+	r = v.Copy()
+
+	// Clear the object
+	iterator := func(x, y, z int) {
+		r.Voxels[x][y][z] = 0
+	}
+
+	r.Iterate(iterator)
+
+	// Stairstep the output
+	iterator = func(x, y, z int) {
+		step := z + ((x / m) * n)
+		for s := step; s < step+n; s++ {
+			if s >= 0 && s < v.Size.Z {
+				if r.Voxels[x][y][s] == 0 {
+					r.Voxels[x][y][s] = v.Voxels[x][y][z]
+				}
+			}
+		}
+	}
+
+	v.Iterate(iterator)
+
+	return
+}
+
 // Scale a cargo object to the cargo area
-func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamp, outputRamp string, scaleLogic geometry.PointF) (r magica.VoxelObject) {
+func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamp, outputRamp string, scaleLogic geometry.PointF, ignoreMask bool) (r magica.VoxelObject) {
 	r = dst.Copy()
 
 	src = Recolour(src, inputRamp, outputRamp)
-	dstBounds := getBounds(&r)
+	dstBounds := getBounds(&r, ignoreMask)
 	srcBounds := geometry.Bounds{Min: geometry.Point{}, Max: geometry.Point{X: src.Size.X, Y: src.Size.Y, Z: src.Size.Z}}
 	srcSize, dstSize := srcBounds.GetSize(), dstBounds.GetSize()
 
@@ -71,7 +104,7 @@ func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamp, output
 	}
 
 	iterator := func(x, y, z int) {
-		if r.Voxels[x][y][z] == 255 {
+		if (ignoreMask && r.Voxels[x][y][z] == 0) || r.Voxels[x][y][z] == 255 {
 			minX := byte(math.Floor(float64(x-dstBounds.Min.X) * scale.X))
 			minY := byte(math.Floor(float64(y-dstBounds.Min.Y) * scale.Y))
 			minZ := byte(math.Floor(float64(z-dstBounds.Min.Z) * scale.Z))
@@ -114,11 +147,11 @@ func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamp, output
 }
 
 // Repeat a cargo object across the cargo area up to n times
-func AddRepeated(v magica.VoxelObject, src magica.VoxelObject, n int, inputRamp, outputRamp string) (r magica.VoxelObject) {
+func AddRepeated(v magica.VoxelObject, src magica.VoxelObject, n int, inputRamp, outputRamp string, ignoreMask bool, ignoreTruncation bool) (r magica.VoxelObject) {
 	r = v.Copy()
 
 	src = Recolour(src, inputRamp, outputRamp)
-	dstBounds := getBounds(&r)
+	dstBounds := getBounds(&r, ignoreMask)
 	srcBounds := geometry.Bounds{Min: geometry.Point{}, Max: geometry.Point{X: src.Size.X, Y: src.Size.Y, Z: src.Size.Z}}
 	srcSize, dstSize := srcBounds.GetSize(), dstBounds.GetSize()
 
@@ -129,7 +162,7 @@ func AddRepeated(v magica.VoxelObject, src magica.VoxelObject, n int, inputRamp,
 	yOffset := ((dstSize.Y + 1) - (items * srcSize.Y)) / 2
 
 	iterator := func(x, y, z int) {
-		if r.Voxels[x][y][z] == 255 {
+		if (ignoreMask && r.Voxels[x][y][z] == 0) || r.Voxels[x][y][z] == 255 {
 			item := ((y - yOffset) - dstBounds.Min.Y) / srcSize.Y
 			col := (dstBounds.Max.X - x) / srcSize.X
 			row := (z - dstBounds.Min.Z) / srcSize.Z
@@ -138,7 +171,7 @@ func AddRepeated(v magica.VoxelObject, src magica.VoxelObject, n int, inputRamp,
 			sy := (y - (yOffset + dstBounds.Min.Y)) % srcSize.Y
 			sz := (z - dstBounds.Min.Z) % srcSize.Z
 
-			if (n == 0 || item+(col*items)+(row*cols*rows) < n) && item < items && col < cols && row < rows && (y-dstBounds.Min.Y) >= yOffset {
+			if (n == 0 || item+(col*items)+(row*cols*rows) < n) && ((n == 0 && ignoreTruncation) || (item < items && col < cols && row < rows)) && (y-dstBounds.Min.Y) >= yOffset {
 				r.Voxels[x][y][z] = src.Voxels[sx][sy][sz]
 			} else {
 				r.Voxels[x][y][z] = 0

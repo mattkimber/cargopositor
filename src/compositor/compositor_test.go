@@ -28,7 +28,7 @@ func Test_getBounds(t *testing.T) {
 			t.Errorf("Could not read object: %v", err)
 		}
 
-		bounds := getBounds(&object)
+		bounds := getBounds(&object, false)
 		if bounds != tc.expected {
 			t.Errorf("Object %s expected bounds %v, got %v", tc.filename, tc.expected, bounds)
 		}
@@ -42,7 +42,7 @@ func TestAddScaledWithSize(t *testing.T) {
 	}
 
 	fn := func(v magica.VoxelObject) magica.VoxelObject {
-		return AddScaled(v, src, "2,16", "72,79", geometry.PointF{X: 1.0, Z: 1.0})
+		return AddScaled(v, src, "2,16", "72,79", geometry.PointF{X: 1.0, Z: 1.0}, false)
 	}
 	testOperation(t, fn, "testdata/not_scaled.vox")
 }
@@ -54,26 +54,34 @@ func TestAddScaled(t *testing.T) {
 	}
 
 	fn := func(v magica.VoxelObject) magica.VoxelObject {
-		return AddScaled(v, src, "2,16", "72,79", geometry.PointF{})
+		return AddScaled(v, src, "2,16", "72,79", geometry.PointF{}, false)
 	}
 	testOperation(t, fn, "testdata/scaled.vox")
 }
 
 func TestAddRepeated(t *testing.T) {
-	testAddRepeatedInner(t, 2, "testdata/example_small.vox", "testdata/repeated_small.vox")
-	testAddRepeatedInner(t, 6, "testdata/example_tiny.vox", "testdata/repeated_tiny.vox")
-	testAddRepeatedInner(t, 0, "testdata/example_tiny.vox", "testdata/repeated_tiny_no_limit.vox")
-	testAddRepeatedInner(t, 1, "testdata/example_centred.vox", "testdata/repeated_tiny_centred.vox")
+	testAddRepeatedInner(t, 2, "testdata/example_small.vox", "testdata/repeated_small.vox", "testdata/example_input.vox", false, false)
+	testAddRepeatedInner(t, 6, "testdata/example_tiny.vox", "testdata/repeated_tiny.vox", "testdata/example_input.vox", false, false)
+	testAddRepeatedInner(t, 0, "testdata/example_tiny.vox", "testdata/repeated_tiny_no_limit.vox", "testdata/example_input.vox", false, false)
+	testAddRepeatedInner(t, 1, "testdata/example_centred.vox", "testdata/repeated_tiny_centred.vox", "testdata/example_input.vox", false, false)
 }
 
-func testAddRepeatedInner(t *testing.T, n int, input, expected string) {
+func TestIgnoreMask(t *testing.T) {
+	testAddRepeatedInner(t, 0, "testdata/no_mask_b.vox", "testdata/no_mask.vox", "testdata/no_mask_a.vox", true, true)
+	testAddRepeatedInner(t, 0, "testdata/no_mask_b.vox", "testdata/no_mask_tiny_1.vox", "testdata/example_tiny.vox", true, true)
+	testAddRepeatedInner(t, 0, "testdata/example_tiny.vox", "testdata/no_mask_tiny_2.vox", "testdata/no_mask_a.vox", true, true)
+}
+
+func testAddRepeatedInner(t *testing.T, n int, input, expected string, inputFilename string, ignoreMask bool, ignoreTruncate bool) {
 	src, err := magica.FromFile(input)
 	if err != nil {
 		t.Errorf("Could not read object: %v", err)
 	}
 
-	fn := func(v magica.VoxelObject) magica.VoxelObject { return AddRepeated(v, src, n, "2,16", "72,79") }
-	testOperation(t, fn, expected)
+	fn := func(v magica.VoxelObject) magica.VoxelObject {
+		return AddRepeated(v, src, n, "2,16", "72,79", ignoreMask, ignoreTruncate)
+	}
+	testOperationWithInputFilename(t, fn, expected, inputFilename)
 }
 
 func TestRecolour(t *testing.T) {
@@ -86,8 +94,24 @@ func TestProduceEmpty(t *testing.T) {
 	testOperation(t, fn, "testdata/produce_empty.vox")
 }
 
+func TestStairstep(t *testing.T) {
+	fn := func(v magica.VoxelObject) magica.VoxelObject { return Stairstep(v, 4, 1) }
+	testOperationWithInputFilename(t, fn, "testdata/stairstep_output.vox", "testdata/stairstep.vox")
+
+	fn = func(v magica.VoxelObject) magica.VoxelObject { return Stairstep(v, 2, 1) }
+	testOperationWithInputFilename(t, fn, "testdata/stairstep_output_2.vox", "testdata/stairstep.vox")
+
+	fn = func(v magica.VoxelObject) magica.VoxelObject { return Stairstep(v, 1, 3) }
+	testOperationWithInputFilename(t, fn, "testdata/stairstep_output_3.vox", "testdata/stairstep.vox")
+
+}
+
 func testOperation(t *testing.T, op func(v magica.VoxelObject) magica.VoxelObject, filename string) {
-	input, err := magica.FromFile("testdata/example_input.vox")
+	testOperationWithInputFilename(t, op, filename, "testdata/example_input.vox")
+}
+
+func testOperationWithInputFilename(t *testing.T, op func(v magica.VoxelObject) magica.VoxelObject, filename, inputFilename string) {
+	input, err := magica.FromFile(inputFilename)
 	if err != nil {
 		t.Errorf("Could not read object: %v", err)
 	}

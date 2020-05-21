@@ -24,6 +24,10 @@ type Operation struct {
 	InputColourRamp  string          `json:"input_ramp"`
 	OutputColourRamp string          `json:"output_ramp"`
 	N                int             `json:"n"`
+	XSteps           int             `json:"x_steps"`
+	ZSteps           int             `json:"z_steps"`
+	IgnoreMask       bool            `json:"ignore_mask"`
+	Truncate         bool            `json:"truncate"`
 	Scale            geometry.PointF `json:"scale""`
 }
 
@@ -110,7 +114,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 				if err != nil {
 					return err
 				}
-				output := AddScaled(input, src, op.InputColourRamp, op.OutputColourRamp, op.Scale)
+				output := AddScaled(input, src, op.InputColourRamp, op.OutputColourRamp, op.Scale, op.IgnoreMask)
 				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
 					return err
 				}
@@ -119,7 +123,12 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 				if err != nil {
 					return err
 				}
-				output := AddRepeated(input, src, op.N, op.InputColourRamp, op.OutputColourRamp)
+				output := AddRepeated(input, src, op.N, op.InputColourRamp, op.OutputColourRamp, op.IgnoreMask, op.Truncate)
+				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
+					return err
+				}
+			case "stairstep":
+				output := Stairstep(input, op.XSteps, op.ZSteps)
 				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
 					return err
 				}
