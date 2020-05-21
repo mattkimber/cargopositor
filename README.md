@@ -121,6 +121,11 @@ Objects will be copied starting at 0,0. Only empty voxels will be overwritten -
 therefore changin the order in which operations are applied (source and destination)
 will produce different results.
 
+#### Truncate
+
+When using repeat with `n` of 0, you can allow truncation at edges by setting `"truncate": true`
+in the operation. This is useful when using repeat to generate textures.
+
 #### Recolouring
 
 Recolouring is not an operation in itself but is supported by some of
