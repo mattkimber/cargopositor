@@ -60,6 +60,34 @@ func ProduceEmpty(v magica.VoxelObject) (r magica.VoxelObject) {
 	return r
 }
 
+// Rotate (and tile) the base object
+func Rotate(v magica.VoxelObject, angle float64, xOffset, yOffset int) (r magica.VoxelObject) {
+	radians := (angle * math.Pi) / 180
+
+	r = v.Copy()
+
+	// Clear the object
+	iterator := func(x, y, z int) {
+		r.Voxels[x][y][z] = 0
+	}
+
+	r.Iterate(iterator)
+
+	// Rotate the output
+	iterator = func(x, y, z int) {
+		sx := (v.Size.X + xOffset + int(float64(x)*math.Cos(radians)-float64(y)*math.Sin(radians))) % v.Size.X
+		sy := (v.Size.Y + yOffset + int(float64(x)*math.Sin(radians)+float64(y)*math.Cos(radians))) % v.Size.Y
+
+		if r.Voxels[x][y][z] == 0 && sx >= 0 && sy >= 0 && sx < v.Size.X && sy < v.Size.Y {
+			r.Voxels[x][y][z] = v.Voxels[sx][sy][z]
+		}
+	}
+
+	r.Iterate(iterator)
+
+	return r
+}
+
 // Stairstep the base object (for every m steps in x, move n steps in z)
 func Stairstep(v magica.VoxelObject, m float64, n int) (r magica.VoxelObject) {
 	r = v.Copy()

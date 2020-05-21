@@ -109,6 +109,16 @@ There are two parameters for this operation:
              for expressing gradients more precisely.
 * `z_steps`: The number of steps to take in `z` at each step up
 
+#### rotate
+
+Rotates the source object by a given number of degrees, repeating and tiling it in the output.
+
+There are three parameters:
+
+* `angle`: The angle (in degrees) to rotate by.
+* `x_offset`: Amount to offset the result in the x dimension.
+* `y_offset`: Amount to offset the result in the y dimension.
+
 #### Ignore Mask
 
 Sometimes you just want to combine two objects without using a mask.

@@ -103,6 +103,14 @@ func TestStairstep(t *testing.T) {
 
 	fn = func(v magica.VoxelObject) magica.VoxelObject { return Stairstep(v, 1, 3) }
 	testOperationWithInputFilename(t, fn, "testdata/stairstep_output_3.vox", "testdata/stairstep.vox")
+}
+
+func TestRotate(t *testing.T) {
+	fn := func(v magica.VoxelObject) magica.VoxelObject { return Rotate(v, 45, -10, 0) }
+	testOperationWithInputFilename(t, fn, "testdata/rotate_45.vox", "testdata/rotate_input.vox")
+
+	fn = func(v magica.VoxelObject) magica.VoxelObject { return Rotate(v, -30, 5, 0) }
+	testOperationWithInputFilename(t, fn, "testdata/rotate_30.vox", "testdata/rotate_input.vox")
 
 }
 

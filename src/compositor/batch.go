@@ -26,6 +26,9 @@ type Operation struct {
 	N                int             `json:"n"`
 	XSteps           float64         `json:"x_steps"`
 	ZSteps           int             `json:"z_steps"`
+	Angle            float64         `json:"angle"`
+	XOffset          int             `json:"x_offset""`
+	YOffset          int             `json:"y_offset""`
 	IgnoreMask       bool            `json:"ignore_mask"`
 	Truncate         bool            `json:"truncate"`
 	Scale            geometry.PointF `json:"scale""`
@@ -129,6 +132,11 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 				}
 			case "stairstep":
 				output := Stairstep(input, op.XSteps, op.ZSteps)
+				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
+					return err
+				}
+			case "rotate":
+				output := Rotate(input, op.Angle, op.XOffset, op.YOffset)
 				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
 					return err
 				}
