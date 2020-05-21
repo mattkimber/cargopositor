@@ -24,7 +24,7 @@ type Operation struct {
 	InputColourRamp  string          `json:"input_ramp"`
 	OutputColourRamp string          `json:"output_ramp"`
 	N                int             `json:"n"`
-	XSteps           int             `json:"x_steps"`
+	XSteps           float64         `json:"x_steps"`
 	ZSteps           int             `json:"z_steps"`
 	IgnoreMask       bool            `json:"ignore_mask"`
 	Truncate         bool            `json:"truncate"`

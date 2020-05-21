@@ -105,7 +105,8 @@ And produces an output like this:
 
 There are two parameters for this operation:
 
-* `x_steps`: The number of steps to take in `x` before moving up the staircase
+* `x_steps`: The number of steps to take in `x` before moving up the staircase. This can be a floating point value
+             for expressing gradients more precisely.
 * `z_steps`: The number of steps to take in `z` at each step up
 
 #### Ignore Mask

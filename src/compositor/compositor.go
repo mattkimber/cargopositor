@@ -61,7 +61,7 @@ func ProduceEmpty(v magica.VoxelObject) (r magica.VoxelObject) {
 }
 
 // Stairstep the base object (for every m steps in x, move n steps in z)
-func Stairstep(v magica.VoxelObject, m, n int) (r magica.VoxelObject) {
+func Stairstep(v magica.VoxelObject, m float64, n int) (r magica.VoxelObject) {
 	r = v.Copy()
 
 	// Clear the object
@@ -73,7 +73,7 @@ func Stairstep(v magica.VoxelObject, m, n int) (r magica.VoxelObject) {
 
 	// Stairstep the output
 	iterator = func(x, y, z int) {
-		step := z + ((x / m) * n)
+		step := z + int((float64(x)/m)*float64(n))
 		for s := step; s < step+n; s++ {
 			if s >= 0 && s < v.Size.Z {
 				if r.Voxels[x][y][s] == 0 {
