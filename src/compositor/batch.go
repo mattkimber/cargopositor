@@ -27,11 +27,11 @@ type Operation struct {
 	XSteps           float64         `json:"x_steps"`
 	ZSteps           int             `json:"z_steps"`
 	Angle            float64         `json:"angle"`
-	XOffset          int             `json:"x_offset""`
-	YOffset          int             `json:"y_offset""`
+	XOffset          int             `json:"x_offset"`
+	YOffset          int             `json:"y_offset"`
 	IgnoreMask       bool            `json:"ignore_mask"`
 	Truncate         bool            `json:"truncate"`
-	Scale            geometry.PointF `json:"scale""`
+	Scale            geometry.PointF `json:"scale"`
 }
 
 func FromJson(handle io.Reader) (b Batch, err error) {
