@@ -189,6 +189,10 @@ func AddRepeated(v magica.VoxelObject, src magica.VoxelObject, n int, inputRamp,
 
 	yOffset := ((dstSize.Y + 1) - (items * srcSize.Y)) / 2
 
+	if ignoreTruncation {
+		yOffset = 0
+	}
+
 	iterator := func(x, y, z int) {
 		if (ignoreMask && r.Voxels[x][y][z] == 0) || r.Voxels[x][y][z] == 255 {
 			item := ((y - yOffset) - dstBounds.Min.Y) / srcSize.Y
