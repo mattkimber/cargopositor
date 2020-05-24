@@ -119,6 +119,19 @@ There are three parameters:
 * `x_offset`: Amount to offset the result in the x dimension.
 * `y_offset`: Amount to offset the result in the y dimension.
 
+#### remove
+
+Removes any filled voxels in the input from the source object. Note that
+this is done for *all* voxels, not just mask voxels.
+
+The input will not be scaled - if it is smaller or larger than the source 
+object, voxels will be removed starting from the (0,0,0) co-ordinate of both
+objects until the boundaries of the smaller are reached.
+
+Mask voxels will be preserved in this operation if they are not part
+of the object to be subtracted. If they are not wanted, perform a
+`produce_empty` on the result.
+
 #### Ignore Mask
 
 Sometimes you just want to combine two objects without using a mask.

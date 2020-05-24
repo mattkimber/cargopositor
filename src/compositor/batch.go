@@ -140,6 +140,15 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
 					return err
 				}
+			case "remove":
+				src, err := magica.FromFile(voxelDirectory + op.File)
+				if err != nil {
+					return err
+				}
+				output := Remove(input, src)
+				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
+					return err
+				}
 			default:
 				return fmt.Errorf("unkown operation %s", op.Type)
 			}
