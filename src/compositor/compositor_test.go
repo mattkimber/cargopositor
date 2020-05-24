@@ -144,3 +144,15 @@ func testOperationWithInputFilename(t *testing.T, op func(v magica.VoxelObject) 
 		t.Errorf("Output did not equal expected")
 	}
 }
+
+func TestRemove(t *testing.T) {
+	src, err := magica.FromFile("testdata/example_small.vox")
+	if err != nil {
+		t.Errorf("Could not read object: %v", err)
+	}
+
+	fn := func(v magica.VoxelObject) magica.VoxelObject {
+		return Remove(v, src)
+	}
+	testOperation(t, fn, "testdata/remove.vox")
+}
