@@ -61,7 +61,7 @@ func ProduceEmpty(v magica.VoxelObject) (r magica.VoxelObject) {
 }
 
 // Rotate (and tile) the base object
-func Rotate(v magica.VoxelObject, angle float64, xOffset, yOffset int) (r magica.VoxelObject) {
+func Rotate(v magica.VoxelObject, angle float64, xOffset, yOffset int, scale geometry.PointF) (r magica.VoxelObject) {
 	radians := (angle * math.Pi) / 180
 
 	r = v.Copy()
@@ -75,8 +75,8 @@ func Rotate(v magica.VoxelObject, angle float64, xOffset, yOffset int) (r magica
 
 	// Rotate the output
 	iterator = func(x, y, z int) {
-		sx := (v.Size.X + xOffset + int(float64(x)*math.Cos(radians)-float64(y)*math.Sin(radians))) % v.Size.X
-		sy := (v.Size.Y + yOffset + int(float64(x)*math.Sin(radians)+float64(y)*math.Cos(radians))) % v.Size.Y
+		sx := (v.Size.X + xOffset + int((float64(x)*math.Cos(radians)-float64(y)*math.Sin(radians))*scale.X)) % v.Size.X
+		sy := (v.Size.Y + yOffset + int((float64(x)*math.Sin(radians)+float64(y)*math.Cos(radians))*scale.Y)) % v.Size.Y
 
 		if r.Voxels[x][y][z] == 0 && sx >= 0 && sy >= 0 && sx < v.Size.X && sy < v.Size.Y {
 			r.Voxels[x][y][z] = v.Voxels[sx][sy][z]

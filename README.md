@@ -113,11 +113,21 @@ There are two parameters for this operation:
 
 Rotates the source object by a given number of degrees, repeating and tiling it in the output.
 
-There are three parameters:
+There are four parameters:
 
 * `angle`: The angle (in degrees) to rotate by.
 * `x_offset`: Amount to offset the result in the x dimension.
 * `y_offset`: Amount to offset the result in the y dimension.
+* `scale`: How much to scale the object in x and y dimensions. This is a **reduction**, so a scale of `2.0` will result in output half the size of the input.
+
+Scale is specified as follows, and is mandatory:
+
+```json
+"scale": {
+    "x": 1.0,
+    "y": 0.5
+}
+```
 
 #### Ignore Mask
 
