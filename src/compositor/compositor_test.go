@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"geometry"
 	"magica"
+	"os"
 	"testing"
 	"utils"
 )
@@ -107,12 +108,12 @@ func TestStairstep(t *testing.T) {
 
 func TestRotate(t *testing.T) {
 	fn := func(v magica.VoxelObject) magica.VoxelObject {
-		return Rotate(v, 45, -10, 0, geometry.PointF{X: 1.0, Y: 1.0})
+		return Rotate(v, 45, -10, 0, geometry.PointF{X: 1.0, Y: 1.0}, BoundingVolume{})
 	}
 	testOperationWithInputFilename(t, fn, "testdata/rotate_45.vox", "testdata/rotate_input.vox")
 
 	fn = func(v magica.VoxelObject) magica.VoxelObject {
-		return Rotate(v, -30, 5, 0, geometry.PointF{X: 1.0, Y: 1.0})
+		return Rotate(v, -30, 5, 0, geometry.PointF{X: 1.0, Y: 1.0}, BoundingVolume{})
 	}
 	testOperationWithInputFilename(t, fn, "testdata/rotate_30.vox", "testdata/rotate_input.vox")
 
@@ -133,6 +134,13 @@ func testOperationWithInputFilename(t *testing.T, op func(v magica.VoxelObject) 
 	buf := bytes.Buffer{}
 	if err := output.Save(&buf); err != nil {
 		t.Errorf("Could not save object: %v", err)
+	}
+
+	// Create test output if it doesn't exist. Check created output
+	// in MagicaVoxel to ensure it is correct.
+	if _, err := os.Stat(filename); err != nil {
+		of, _ := os.Create(filename)
+		output.Save(of)
 	}
 
 	result, err := utils.CompareToFile(buf.Bytes(), filename)

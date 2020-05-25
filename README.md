@@ -119,13 +119,32 @@ There are four parameters:
 * `x_offset`: Amount to offset the result in the x dimension.
 * `y_offset`: Amount to offset the result in the y dimension.
 * `scale`: How much to scale the object in x and y dimensions. This is a **reduction**, so a scale of `2.0` will result in output half the size of the input.
+* `bounding_volume`: The bounding volume of the input object
 
-Scale is specified as follows, and is mandatory:
+Scale is specified as follows, and is optional (defaulting to 1.0 in all dimensions):
 
 ```json
 "scale": {
     "x": 1.0,
     "y": 0.5
+}
+```
+
+Sometimes objects "overhang" at either end and produce undesirable tiling behaviour. To resolve this,
+using the `bounding_volume` setting:
+
+```json
+"bounding_volume": {
+  "min": {
+    "x": 2,
+    "y": 2,
+    "z": 0
+  },
+  "max": {
+    "x": 64,
+    "y": 64,
+    "z": 0
+  }  
 }
 ```
 

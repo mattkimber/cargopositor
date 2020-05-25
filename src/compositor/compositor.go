@@ -61,10 +61,24 @@ func ProduceEmpty(v magica.VoxelObject) (r magica.VoxelObject) {
 }
 
 // Rotate (and tile) the base object
-func Rotate(v magica.VoxelObject, angle float64, xOffset, yOffset int, scale geometry.PointF) (r magica.VoxelObject) {
+func Rotate(v magica.VoxelObject, angle float64, xOffset, yOffset int, scale geometry.PointF, boundingVolume BoundingVolume) (r magica.VoxelObject) {
 	radians := (angle * math.Pi) / 180
 
+	// If no bounding volume was supplied default to (0,0,0)-(max, max, max)
+	if (boundingVolume.Max == geometry.Point{}) {
+		boundingVolume.Max = geometry.Point{X: v.Size.X, Y: v.Size.Y, Z: v.Size.Z}
+	}
+
+	// If no scale is supplied default to (1,1,1)
+	if (scale == geometry.PointF{}) {
+		scale = geometry.PointF{X: 1, Y: 1, Z: 1}
+	}
+
 	r = v.Copy()
+
+	bvx := boundingVolume.Max.X - boundingVolume.Min.X
+	bvy := boundingVolume.Max.Y - boundingVolume.Min.Y
+	bvz := boundingVolume.Max.Z - boundingVolume.Min.Z
 
 	// Clear the object
 	iterator := func(x, y, z int) {
@@ -75,11 +89,12 @@ func Rotate(v magica.VoxelObject, angle float64, xOffset, yOffset int, scale geo
 
 	// Rotate the output
 	iterator = func(x, y, z int) {
-		sx := (v.Size.X + xOffset + int((float64(x)*math.Cos(radians)-float64(y)*math.Sin(radians))*scale.X)) % v.Size.X
-		sy := (v.Size.Y + yOffset + int((float64(x)*math.Sin(radians)+float64(y)*math.Cos(radians))*scale.Y)) % v.Size.Y
+		sx := ((bvx + xOffset + int((float64(x)*math.Cos(radians)-float64(y)*math.Sin(radians))*scale.X)) % bvx) + boundingVolume.Min.X
+		sy := ((bvy + yOffset + int((float64(x)*math.Sin(radians)+float64(y)*math.Cos(radians))*scale.Y)) % bvy) + boundingVolume.Min.Y
+		sz := ((z + bvz) % bvz) + boundingVolume.Min.Z
 
 		if r.Voxels[x][y][z] == 0 && sx >= 0 && sy >= 0 && sx < v.Size.X && sy < v.Size.Y {
-			r.Voxels[x][y][z] = v.Voxels[sx][sy][z]
+			r.Voxels[x][y][z] = v.Voxels[sx][sy][sz]
 		}
 	}
 
@@ -102,7 +117,16 @@ func Stairstep(v magica.VoxelObject, m float64, n int) (r magica.VoxelObject) {
 	// Stairstep the output
 	iterator = func(x, y, z int) {
 		step := z + int((float64(x)/m)*float64(n))
-		for s := step; s < step+n; s++ {
+		begin := step
+
+		if x > 0 {
+			prevStep := z + int((float64(x-1)/m)*float64(n))
+			if prevStep < step {
+				begin -= n
+			}
+		}
+
+		for s := begin; s < step+n; s++ {
 			if s >= 0 && s < v.Size.Z {
 				if r.Voxels[x][y][s] == 0 {
 					r.Voxels[x][y][s] = v.Voxels[x][y][z]

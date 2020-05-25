@@ -17,6 +17,11 @@ type Batch struct {
 	Operations []Operation `json:"operations"`
 }
 
+type BoundingVolume struct {
+	Min geometry.Point `json:"min"`
+	Max geometry.Point `json:"max"`
+}
+
 type Operation struct {
 	Name             string          `json:"name"`
 	Type             string          `json:"type"`
@@ -32,6 +37,7 @@ type Operation struct {
 	IgnoreMask       bool            `json:"ignore_mask"`
 	Truncate         bool            `json:"truncate"`
 	Scale            geometry.PointF `json:"scale"`
+	BoundingVolume   BoundingVolume  `json:"bounding_volume"`
 }
 
 func FromJson(handle io.Reader) (b Batch, err error) {
@@ -136,7 +142,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 					return err
 				}
 			case "rotate":
-				output := Rotate(input, op.Angle, op.XOffset, op.YOffset, op.Scale)
+				output := Rotate(input, op.Angle, op.XOffset, op.YOffset, op.Scale, op.BoundingVolume)
 				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
 					return err
 				}
