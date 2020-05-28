@@ -161,6 +161,19 @@ Mask voxels will be preserved in this operation if they are not part
 of the object to be subtracted. If they are not wanted, perform a
 `produce_empty` on the result.
 
+#### clip
+
+Clip is similar to remove, but instead *keeps* voxels where the input's voxels
+are the mask colour (255).
+
+As with `remove` the input will not be scaled - if it is smaller or larger than 
+the source object, voxels will be removed starting from the (0,0,0) co-ordinate 
+of both objects until the boundaries of the smaller are reached.
+
+Mask voxels will be preserved in this operation, if they are part
+of the object to be subtracted. If they are not wanted, perform a
+`produce_empty` on the result.
+
 #### Ignore Mask
 
 Sometimes you just want to combine two objects without using a mask.

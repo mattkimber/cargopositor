@@ -151,7 +151,16 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 				if err != nil {
 					return err
 				}
-				output := Remove(input, src)
+				output := Remove(input, src, 0)
+				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
+					return err
+				}
+			case "clip":
+				src, err := magica.FromFile(voxelDirectory + op.File)
+				if err != nil {
+					return err
+				}
+				output := Remove(input, src, 255)
 				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
 					return err
 				}

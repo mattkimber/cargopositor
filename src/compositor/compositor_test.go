@@ -160,7 +160,12 @@ func TestRemove(t *testing.T) {
 	}
 
 	fn := func(v magica.VoxelObject) magica.VoxelObject {
-		return Remove(v, src)
+		return Remove(v, src, 0)
 	}
 	testOperation(t, fn, "testdata/remove.vox")
+
+	fn = func(v magica.VoxelObject) magica.VoxelObject {
+		return Remove(v, src, 255)
+	}
+	testOperation(t, fn, "testdata/clip.vox")
 }

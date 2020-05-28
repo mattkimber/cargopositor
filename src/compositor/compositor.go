@@ -239,12 +239,12 @@ func AddRepeated(v magica.VoxelObject, src magica.VoxelObject, n int, inputRamp,
 	return r
 }
 
-// Remove one voxel object from another
-func Remove(v magica.VoxelObject, src magica.VoxelObject) (r magica.VoxelObject) {
+// Remove one voxel object from another (or clip against a colour)
+func Remove(v magica.VoxelObject, src magica.VoxelObject, index uint8) (r magica.VoxelObject) {
 	r = v.Copy()
 
 	iterator := func(x, y, z int) {
-		if x < src.Size.X && y < src.Size.Y && z < src.Size.Z && src.Voxels[x][y][z] != 0 {
+		if x < src.Size.X && y < src.Size.Y && z < src.Size.Z && src.Voxels[x][y][z] != index {
 			r.Voxels[x][y][z] = 0
 		}
 	}
