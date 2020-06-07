@@ -36,6 +36,7 @@ type Operation struct {
 	YOffset          int             `json:"y_offset"`
 	IgnoreMask       bool            `json:"ignore_mask"`
 	Truncate         bool            `json:"truncate"`
+	MaskOriginal     bool            `json:"mask_original"`
 	Scale            geometry.PointF `json:"scale"`
 	BoundingVolume   BoundingVolume  `json:"bounding_volume"`
 }
@@ -132,7 +133,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 				if err != nil {
 					return err
 				}
-				output := AddRepeated(input, src, op.N, op.InputColourRamp, op.OutputColourRamp, op.IgnoreMask, op.Truncate)
+				output := AddRepeated(input, src, op.N, op.InputColourRamp, op.OutputColourRamp, op.IgnoreMask, op.Truncate, op.MaskOriginal)
 				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
 					return err
 				}

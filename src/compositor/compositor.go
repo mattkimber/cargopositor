@@ -199,7 +199,7 @@ func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamp, output
 }
 
 // Repeat a cargo object across the cargo area up to n times
-func AddRepeated(v magica.VoxelObject, src magica.VoxelObject, n int, inputRamp, outputRamp string, ignoreMask bool, ignoreTruncation bool) (r magica.VoxelObject) {
+func AddRepeated(v magica.VoxelObject, src magica.VoxelObject, n int, inputRamp, outputRamp string, ignoreMask bool, ignoreTruncation bool, maskOriginal bool) (r magica.VoxelObject) {
 	r = v.Copy()
 
 	src = Recolour(src, inputRamp, outputRamp)
@@ -232,6 +232,8 @@ func AddRepeated(v magica.VoxelObject, src magica.VoxelObject, n int, inputRamp,
 			} else {
 				r.Voxels[x][y][z] = 0
 			}
+		} else if r.Voxels[x][y][z] != 0 && maskOriginal {
+			r.Voxels[x][y][z] = 255
 		}
 	}
 

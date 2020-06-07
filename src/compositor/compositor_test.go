@@ -80,7 +80,7 @@ func testAddRepeatedInner(t *testing.T, n int, input, expected string, inputFile
 	}
 
 	fn := func(v magica.VoxelObject) magica.VoxelObject {
-		return AddRepeated(v, src, n, "2,16", "72,79", ignoreMask, ignoreTruncate)
+		return AddRepeated(v, src, n, "2,16", "72,79", ignoreMask, ignoreTruncate, false)
 	}
 	testOperationWithInputFilename(t, fn, expected, inputFilename)
 }

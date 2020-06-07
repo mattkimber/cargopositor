@@ -192,6 +192,12 @@ will produce different results.
 When using repeat with `n` of 0, you can allow truncation at edges by setting `"truncate": true`
 in the operation. This is useful when using repeat to generate textures.
 
+#### Mask Original
+
+When using repeat, you can set all voxels of the original object that are *not* part of the
+clip area to 255 by setting `mask_original` to `true`. This is useful for generating
+overlay sprites with GoRender, by rendering just the pixels which should be overlaid.
+
 #### Recolouring
 
 Recolouring is not an operation in itself but is supported by some of
