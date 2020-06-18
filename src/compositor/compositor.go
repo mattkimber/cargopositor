@@ -60,8 +60,8 @@ func ProduceEmpty(v magica.VoxelObject) (r magica.VoxelObject) {
 	return r
 }
 
-// Rotate (and tile) the base object
-func Rotate(v magica.VoxelObject, angle float64, xOffset, yOffset int, scale geometry.PointF, boundingVolume BoundingVolume) (r magica.VoxelObject) {
+// RotateAndTile (and tile) the base object
+func RotateAndTile(v magica.VoxelObject, angle float64, xOffset, yOffset int, scale geometry.PointF, boundingVolume BoundingVolume) (r magica.VoxelObject) {
 	radians := (angle * math.Pi) / 180
 
 	// If no bounding volume was supplied default to (0,0,0)-(max, max, max)
@@ -87,7 +87,7 @@ func Rotate(v magica.VoxelObject, angle float64, xOffset, yOffset int, scale geo
 
 	r.Iterate(iterator)
 
-	// Rotate the output
+	// RotateAndTile the output
 	iterator = func(x, y, z int) {
 		sx := ((bvx + xOffset + int((float64(x)*math.Cos(radians)-float64(y)*math.Sin(radians))*scale.X)) % bvx) + boundingVolume.Min.X
 		sy := ((bvy + yOffset + int((float64(x)*math.Sin(radians)+float64(y)*math.Cos(radians))*scale.Y)) % bvy) + boundingVolume.Min.Y
@@ -283,4 +283,58 @@ func Recolour(v magica.VoxelObject, inputRamp, outputRamp string) (r magica.Voxe
 	r.Iterate(iterator)
 
 	return r
+}
+
+// Rotate an object around its Y axis
+func RotateY(v magica.VoxelObject, angle float64) (r magica.VoxelObject) {
+	sin, cos := math.Sin(degToRad(angle)), math.Cos(degToRad(angle))
+
+	orgMidpointX := float64(v.Size.X) / 2
+	orgMidpointZ := float64(v.Size.Z) / 2
+
+	xVector := (orgMidpointX * math.Abs(cos)) + (orgMidpointZ * math.Abs(sin))
+	zVector := (orgMidpointX * math.Abs(sin)) + (orgMidpointZ * math.Abs(cos))
+
+	sizeX, sizeZ := int(math.Ceil(xVector * 2)), int(math.Ceil(zVector * 2))
+
+	r = magica.VoxelObject{
+		Voxels:      nil,
+		PaletteData: v.PaletteData,
+		Size:        geometry.Point{X: sizeX, Y: v.Size.Y, Z: sizeZ},
+	}
+
+	// Create the voxel array
+	r.Voxels = make([][][]byte, r.Size.X)
+	for x := 0; x < r.Size.X; x++ {
+		r.Voxels[x] = make([][]byte, r.Size.Y)
+		for y := 0; y < r.Size.Y; y++ {
+			r.Voxels[x][y] = make([]byte, r.Size.Z)
+		}
+	}
+
+	vMidpointX := float64(v.Size.X) / 2
+	vMidpointZ := float64(v.Size.Z) / 2
+
+	iterator := func(x, y, z int) {
+
+		fdx := float64(x) - (float64(r.Size.X) / 2)
+		fdz := float64(z) - (float64(r.Size.Z) / 2)
+
+		fdx, fdz = (fdx * cos) + (fdz * sin), (fdx * -sin) + (fdz * cos)
+
+		dx := int(math.Ceil(fdx + vMidpointX))
+		dz := int(math.Ceil(fdz + vMidpointZ))
+
+		if dx >= 0 && dz >= 0 && dx < v.Size.X && dz < v.Size.Z {
+			r.Voxels[x][y][z] = v.Voxels[dx][y][dz]
+		}
+	}
+
+	r.Iterate(iterator)
+
+	return r
+}
+
+func degToRad(angle float64) float64 {
+	return (angle / 180.0) * math.Pi
 }

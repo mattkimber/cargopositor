@@ -148,6 +148,11 @@ using the `bounding_volume` setting:
 }
 ```
 
+#### rotate_y
+
+Rotates the given source object around the Y axis by the given number of
+degrees. This is useful for producing "hill" or "slope" sprites.
+
 #### remove
 
 Removes any filled voxels in the input from the source object. Note that

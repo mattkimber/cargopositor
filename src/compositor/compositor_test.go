@@ -106,16 +106,45 @@ func TestStairstep(t *testing.T) {
 	testOperationWithInputFilename(t, fn, "testdata/stairstep_output_3.vox", "testdata/stairstep.vox")
 }
 
-func TestRotate(t *testing.T) {
+func TestRotateAndTile(t *testing.T) {
 	fn := func(v magica.VoxelObject) magica.VoxelObject {
-		return Rotate(v, 45, -10, 0, geometry.PointF{X: 1.0, Y: 1.0}, BoundingVolume{})
+		return RotateAndTile(v, 45, -10, 0, geometry.PointF{X: 1.0, Y: 1.0}, BoundingVolume{})
 	}
 	testOperationWithInputFilename(t, fn, "testdata/rotate_45.vox", "testdata/rotate_input.vox")
 
 	fn = func(v magica.VoxelObject) magica.VoxelObject {
-		return Rotate(v, -30, 5, 0, geometry.PointF{X: 1.0, Y: 1.0}, BoundingVolume{})
+		return RotateAndTile(v, -30, 5, 0, geometry.PointF{X: 1.0, Y: 1.0}, BoundingVolume{})
 	}
 	testOperationWithInputFilename(t, fn, "testdata/rotate_30.vox", "testdata/rotate_input.vox")
+
+}
+
+func TestRotateY(t *testing.T) {
+	fn := func(v magica.VoxelObject) magica.VoxelObject {
+		return RotateY(v, 0)
+	}
+	testOperationWithInputFilename(t, fn, "testdata/rotate_y_output_0.vox", "testdata/rotate_y_input.vox")
+
+	fn = func(v magica.VoxelObject) magica.VoxelObject {
+		return RotateY(v, 5)
+	}
+	testOperationWithInputFilename(t, fn, "testdata/rotate_y_output_5.vox", "testdata/rotate_y_input.vox")
+
+
+	fn = func(v magica.VoxelObject) magica.VoxelObject {
+		return RotateY(v, 45)
+	}
+	testOperationWithInputFilename(t, fn, "testdata/rotate_y_output_45.vox", "testdata/rotate_y_input.vox")
+
+	fn = func(v magica.VoxelObject) magica.VoxelObject {
+		return RotateY(v, -30)
+	}
+	testOperationWithInputFilename(t, fn, "testdata/rotate_y_output_30.vox", "testdata/rotate_y_input.vox")
+
+	fn = func(v magica.VoxelObject) magica.VoxelObject {
+		return RotateY(v, 90)
+	}
+	testOperationWithInputFilename(t, fn, "testdata/rotate_y_output_90.vox", "testdata/rotate_y_input.vox")
 
 }
 
