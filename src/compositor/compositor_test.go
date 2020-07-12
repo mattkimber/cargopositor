@@ -130,7 +130,6 @@ func TestRotateY(t *testing.T) {
 	}
 	testOperationWithInputFilename(t, fn, "testdata/rotate_y_output_5.vox", "testdata/rotate_y_input.vox")
 
-
 	fn = func(v magica.VoxelObject) magica.VoxelObject {
 		return RotateY(v, 45)
 	}

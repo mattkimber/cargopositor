@@ -297,7 +297,7 @@ func RotateY(v magica.VoxelObject, angle float64) (r magica.VoxelObject) {
 	xVector := (orgMidpointX * math.Abs(cos)) + (orgMidpointZ * math.Abs(sin))
 	zVector := (orgMidpointX * math.Abs(sin)) + (orgMidpointZ * math.Abs(cos))
 
-	sizeX, sizeZ := int(math.Ceil(xVector * 2)), int(math.Ceil(zVector * 2))
+	sizeX, sizeZ := int(math.Ceil(xVector*2)), int(math.Ceil(zVector*2))
 
 	r = magica.VoxelObject{
 		Voxels:      nil,
@@ -322,7 +322,7 @@ func RotateY(v magica.VoxelObject, angle float64) (r magica.VoxelObject) {
 		fdx := float64(x) - (float64(r.Size.X) / 2)
 		fdz := float64(z) - (float64(r.Size.Z) / 2)
 
-		fdx, fdz = (fdx * cos) + (fdz * sin), (fdx * -sin) + (fdz * cos)
+		fdx, fdz = (fdx*cos)+(fdz*sin), (fdx*-sin)+(fdz*cos)
 
 		dx := int(math.Ceil(fdx + vMidpointX))
 		dz := int(math.Ceil(fdz + vMidpointZ))
