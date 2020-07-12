@@ -141,7 +141,7 @@ func Stairstep(v magica.VoxelObject, m float64, n int) (r magica.VoxelObject) {
 }
 
 // Scale a cargo object to the cargo area
-func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamp, outputRamp string, scaleLogic geometry.PointF, ignoreMask bool) (r magica.VoxelObject) {
+func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamp, outputRamp string, scaleLogic geometry.PointF, ignoreMask bool, maskOriginal bool) (r magica.VoxelObject) {
 	r = dst.Copy()
 
 	src = Recolour(src, inputRamp, outputRamp)
@@ -190,6 +190,8 @@ func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamp, output
 			}
 
 			r.Voxels[x][y][z] = modalIndex
+		} else if maskOriginal && r.Voxels[x][y][z] != 0 {
+			r.Voxels[x][y][z] = 255
 		}
 	}
 

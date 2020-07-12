@@ -124,7 +124,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 				if err != nil {
 					return err
 				}
-				output := AddScaled(input, src, op.InputColourRamp, op.OutputColourRamp, op.Scale, op.IgnoreMask)
+				output := AddScaled(input, src, op.InputColourRamp, op.OutputColourRamp, op.Scale, op.IgnoreMask, op.MaskOriginal)
 				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
 					return err
 				}
