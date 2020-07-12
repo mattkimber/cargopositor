@@ -143,7 +143,12 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 					return err
 				}
 			case "rotate":
-				output := Rotate(input, op.Angle, op.XOffset, op.YOffset, op.Scale, op.BoundingVolume)
+				output := RotateAndTile(input, op.Angle, op.XOffset, op.YOffset, op.Scale, op.BoundingVolume)
+				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
+					return err
+				}
+			case "rotate_y":
+				output := RotateY(input, op.Angle)
 				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
 					return err
 				}
