@@ -9,6 +9,7 @@ import (
 	"magica"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 )
 
@@ -68,6 +69,8 @@ func FromFile(filename string) (b Batch, err error) {
 }
 
 func getOutputFileName(directory, filename, suffix string) string {
+	// deal with windows paths
+	filename = strings.Replace(filename, "\\", "/", -1)
 	if len(directory) > 0 {
 		filename = directory + path.Base(filename)
 	}
@@ -83,13 +86,13 @@ func getOutputFileName(directory, filename, suffix string) string {
 func saveFile(v *magica.VoxelObject, filename string) error {
 	handle, err := os.Create(filename)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not create output file %s: %v", filename, err)
 	}
 
 	err = v.Save(handle)
 	if err != nil {
 		handle.Close()
-		return err
+		return fmt.Errorf("could not open output file: %v", err)
 	}
 
 	err = handle.Close()
@@ -105,10 +108,24 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 		outputDirectory = outputDirectory + "/"
 	}
 
-	for _, f := range b.Files {
-		input, err := magica.FromFile(voxelDirectory + f)
+	// Start with at least the length of files, as we know we have this many
+	expandedFiles := make([]string, 0, len(b.Files))
+
+	// Expand file paths
+	for _, fileSpec := range b.Files {
+		files, err := filepath.Glob(voxelDirectory + fileSpec)
 		if err != nil {
 			return err
+		}
+		for _, file := range files {
+			expandedFiles = append(expandedFiles, file)
+		}
+	}
+
+	for _, f := range expandedFiles {
+		input, err := magica.FromFile(f)
+		if err != nil {
+			return fmt.Errorf("could not open input file %s: %v", f, err)
 		}
 
 		for _, op := range b.Operations {
@@ -122,7 +139,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 			case "scale":
 				src, err := magica.FromFile(voxelDirectory + op.File)
 				if err != nil {
-					return err
+					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory + op.File, err)
 				}
 				output := AddScaled(input, src, op.InputColourRamp, op.OutputColourRamp, op.Scale, op.IgnoreMask, op.MaskOriginal)
 				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
@@ -131,7 +148,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 			case "repeat":
 				src, err := magica.FromFile(voxelDirectory + op.File)
 				if err != nil {
-					return err
+					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory + op.File, err)
 				}
 				output := AddRepeated(input, src, op.N, op.InputColourRamp, op.OutputColourRamp, op.IgnoreMask, op.Truncate, op.MaskOriginal)
 				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
@@ -155,7 +172,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 			case "remove":
 				src, err := magica.FromFile(voxelDirectory + op.File)
 				if err != nil {
-					return err
+					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory + op.File, err)
 				}
 				output := Remove(input, src, 0)
 				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
@@ -164,7 +181,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 			case "clip":
 				src, err := magica.FromFile(voxelDirectory + op.File)
 				if err != nil {
-					return err
+					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory + op.File, err)
 				}
 				output := Remove(input, src, 255)
 				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
