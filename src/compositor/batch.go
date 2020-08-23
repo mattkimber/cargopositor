@@ -129,7 +129,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 
 			outputFileName := getOutputFileName(outputDirectory, f, op.Name)
 
-			newer, err := inputFileIsNewerThanOutput(f, op.File, outputFileName)
+			newer, err := inputFileIsNewerThanOutput(f, voxelDirectory, op.File, outputFileName)
 			if err != nil {
 				return fmt.Errorf("could not stat input and/or output files: %w", err)
 			}
@@ -211,7 +211,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 	return
 }
 
-func inputFileIsNewerThanOutput(input, opfile, output string) (bool, error) {
+func inputFileIsNewerThanOutput(input, voxelDir, opfile, output string) (bool, error) {
 	in, err := os.Stat(input)
 	if err != nil {
 		return false, err
@@ -228,7 +228,7 @@ func inputFileIsNewerThanOutput(input, opfile, output string) (bool, error) {
 	}
 
 	if opfile != "" {
-		in, err := os.Stat(opfile)
+		in, err := os.Stat(voxelDir + opfile)
 		if err != nil {
 			return false, err
 		}
