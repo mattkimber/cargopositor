@@ -228,7 +228,7 @@ func inputFileIsNewerThanOutput(input, opfile, output string) (bool, error) {
 	}
 
 	if opfile != "" {
-		in, err := os.Stat(input)
+		in, err := os.Stat(opfile)
 		if err != nil {
 			return false, err
 		}
