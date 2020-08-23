@@ -123,17 +123,32 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 	}
 
 	for _, f := range expandedFiles {
-		input, err := magica.FromFile(f)
-		if err != nil {
-			return fmt.Errorf("could not open input file %s: %v", f, err)
-		}
+		var input magica.VoxelObject
 
 		for _, op := range b.Operations {
+
+			outputFileName := getOutputFileName(outputDirectory, f, op.Name)
+
+			newer, err := inputFileIsNewerThanOutput(f, outputFileName)
+			if err != nil {
+				return fmt.Errorf("could not stat input and/or output files: %w", err)
+			}
+
+			if !newer {
+				continue
+			}
+
+			if input.Size.X == 0 && input.Size.Y == 0 && input.Size.Z == 0 {
+				input, err = magica.FromFile(f)
+				if err != nil {
+					return fmt.Errorf("could not open input file %s: %v", f, err)
+				}
+			}
 
 			switch op.Type {
 			case "produce_empty":
 				output := ProduceEmpty(input)
-				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
+				if err := saveFile(&output, outputFileName); err != nil {
 					return err
 				}
 			case "scale":
@@ -142,7 +157,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory + op.File, err)
 				}
 				output := AddScaled(input, src, op.InputColourRamp, op.OutputColourRamp, op.Scale, op.IgnoreMask, op.MaskOriginal)
-				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
+				if err := saveFile(&output, outputFileName); err != nil {
 					return err
 				}
 			case "repeat":
@@ -151,22 +166,22 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory + op.File, err)
 				}
 				output := AddRepeated(input, src, op.N, op.InputColourRamp, op.OutputColourRamp, op.IgnoreMask, op.Truncate, op.MaskOriginal)
-				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
+				if err := saveFile(&output, outputFileName); err != nil {
 					return err
 				}
 			case "stairstep":
 				output := Stairstep(input, op.XSteps, op.ZSteps)
-				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
+				if err := saveFile(&output, outputFileName); err != nil {
 					return err
 				}
 			case "rotate":
 				output := RotateAndTile(input, op.Angle, op.XOffset, op.YOffset, op.Scale, op.BoundingVolume)
-				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
+				if err := saveFile(&output, outputFileName); err != nil {
 					return err
 				}
 			case "rotate_y":
 				output := RotateY(input, op.Angle)
-				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
+				if err := saveFile(&output, outputFileName); err != nil {
 					return err
 				}
 			case "remove":
@@ -175,7 +190,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory + op.File, err)
 				}
 				output := Remove(input, src, 0)
-				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
+				if err := saveFile(&output, outputFileName); err != nil {
 					return err
 				}
 			case "clip":
@@ -184,7 +199,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory + op.File, err)
 				}
 				output := Remove(input, src, 255)
-				if err := saveFile(&output, getOutputFileName(outputDirectory, f, op.Name)); err != nil {
+				if err := saveFile(&output, outputFileName); err != nil {
 					return err
 				}
 			default:
@@ -194,4 +209,23 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 	}
 
 	return
+}
+
+func inputFileIsNewerThanOutput(input, output string) (bool, error) {
+	in, err := os.Stat(input)
+	if err != nil {
+		return false, err
+	}
+
+	out, err := os.Stat(output)
+	if err != nil {
+		// By default if we can't stat the output file, replace it
+		return true, nil
+	}
+
+	if in.ModTime().After(out.ModTime()) {
+		return true, nil
+	}
+
+	return false, nil
 }
