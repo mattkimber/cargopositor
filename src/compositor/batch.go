@@ -40,6 +40,7 @@ type Operation struct {
 	MaskOriginal     bool            `json:"mask_original"`
 	Scale            geometry.PointF `json:"scale"`
 	BoundingVolume   BoundingVolume  `json:"bounding_volume"`
+	Overwrite        bool            `json:"overwrite"`
 }
 
 func FromJson(handle io.Reader) (b Batch, err error) {
@@ -154,18 +155,18 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 			case "scale":
 				src, err := magica.FromFile(voxelDirectory + op.File)
 				if err != nil {
-					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory + op.File, err)
+					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory+op.File, err)
 				}
-				output := AddScaled(input, src, op.InputColourRamp, op.OutputColourRamp, op.Scale, op.IgnoreMask, op.MaskOriginal)
+				output := AddScaled(input, src, op.InputColourRamp, op.OutputColourRamp, op.Scale, op.Overwrite, op.IgnoreMask, op.MaskOriginal)
 				if err := saveFile(&output, outputFileName); err != nil {
 					return err
 				}
 			case "repeat":
 				src, err := magica.FromFile(voxelDirectory + op.File)
 				if err != nil {
-					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory + op.File, err)
+					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory+op.File, err)
 				}
-				output := AddRepeated(input, src, op.N, op.InputColourRamp, op.OutputColourRamp, op.IgnoreMask, op.Truncate, op.MaskOriginal)
+				output := AddRepeated(input, src, op.N, op.InputColourRamp, op.OutputColourRamp, op.Overwrite, op.IgnoreMask, op.Truncate, op.MaskOriginal)
 				if err := saveFile(&output, outputFileName); err != nil {
 					return err
 				}
@@ -187,7 +188,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 			case "remove":
 				src, err := magica.FromFile(voxelDirectory + op.File)
 				if err != nil {
-					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory + op.File, err)
+					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory+op.File, err)
 				}
 				output := Remove(input, src, 0)
 				if err := saveFile(&output, outputFileName); err != nil {
@@ -196,7 +197,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 			case "clip":
 				src, err := magica.FromFile(voxelDirectory + op.File)
 				if err != nil {
-					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory + op.File, err)
+					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory+op.File, err)
 				}
 				output := Remove(input, src, 255)
 				if err := saveFile(&output, outputFileName); err != nil {

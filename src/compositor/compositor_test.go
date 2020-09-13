@@ -43,7 +43,7 @@ func TestAddScaledWithSize(t *testing.T) {
 	}
 
 	fn := func(v magica.VoxelObject) magica.VoxelObject {
-		return AddScaled(v, src, "2,16", "72,79", geometry.PointF{X: 1.0, Z: 1.0}, false, false)
+		return AddScaled(v, src, "2,16", "72,79", geometry.PointF{X: 1.0, Z: 1.0}, false, false, false)
 	}
 	testOperation(t, fn, "testdata/not_scaled.vox")
 }
@@ -55,7 +55,7 @@ func TestAddScaled(t *testing.T) {
 	}
 
 	fn := func(v magica.VoxelObject) magica.VoxelObject {
-		return AddScaled(v, src, "2,16", "72,79", geometry.PointF{}, false, false)
+		return AddScaled(v, src, "2,16", "72,79", geometry.PointF{}, false, false, false)
 	}
 	testOperation(t, fn, "testdata/scaled.vox")
 }
@@ -80,7 +80,7 @@ func testAddRepeatedInner(t *testing.T, n int, input, expected string, inputFile
 	}
 
 	fn := func(v magica.VoxelObject) magica.VoxelObject {
-		return AddRepeated(v, src, n, "2,16", "72,79", ignoreMask, ignoreTruncate, false)
+		return AddRepeated(v, src, n, "2,16", "72,79", false, ignoreMask, ignoreTruncate, false)
 	}
 	testOperationWithInputFilename(t, fn, expected, inputFilename)
 }

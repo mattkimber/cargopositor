@@ -141,7 +141,7 @@ func Stairstep(v magica.VoxelObject, m float64, n int) (r magica.VoxelObject) {
 }
 
 // Scale a cargo object to the cargo area
-func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamp, outputRamp string, scaleLogic geometry.PointF, ignoreMask bool, maskOriginal bool) (r magica.VoxelObject) {
+func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamp, outputRamp string, scaleLogic geometry.PointF, overwrite bool, ignoreMask bool, maskOriginal bool) (r magica.VoxelObject) {
 	r = dst.Copy()
 
 	src = Recolour(src, inputRamp, outputRamp)
@@ -156,7 +156,7 @@ func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamp, output
 	}
 
 	iterator := func(x, y, z int) {
-		if (ignoreMask && r.Voxels[x][y][z] == 0) || r.Voxels[x][y][z] == 255 {
+		if (ignoreMask && r.Voxels[x][y][z] == 0) || r.Voxels[x][y][z] == 255 || overwrite {
 			minX := byte(math.Floor(float64(x-dstBounds.Min.X) * scale.X))
 			minY := byte(math.Floor(float64(y-dstBounds.Min.Y) * scale.Y))
 			minZ := byte(math.Floor(float64(z-dstBounds.Min.Z) * scale.Z))
@@ -189,7 +189,9 @@ func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamp, output
 				}
 			}
 
-			r.Voxels[x][y][z] = modalIndex
+			if !overwrite || modalIndex != 0 {
+				r.Voxels[x][y][z] = modalIndex
+			}
 		} else if maskOriginal && r.Voxels[x][y][z] != 0 {
 			r.Voxels[x][y][z] = 255
 		}
@@ -201,7 +203,7 @@ func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamp, output
 }
 
 // Repeat a cargo object across the cargo area up to n times
-func AddRepeated(v magica.VoxelObject, src magica.VoxelObject, n int, inputRamp, outputRamp string, ignoreMask bool, ignoreTruncation bool, maskOriginal bool) (r magica.VoxelObject) {
+func AddRepeated(v magica.VoxelObject, src magica.VoxelObject, n int, inputRamp, outputRamp string, overwrite bool, ignoreMask bool, ignoreTruncation bool, maskOriginal bool) (r magica.VoxelObject) {
 	r = v.Copy()
 
 	src = Recolour(src, inputRamp, outputRamp)
@@ -220,7 +222,7 @@ func AddRepeated(v magica.VoxelObject, src magica.VoxelObject, n int, inputRamp,
 	}
 
 	iterator := func(x, y, z int) {
-		if (ignoreMask && r.Voxels[x][y][z] == 0) || r.Voxels[x][y][z] == 255 {
+		if (ignoreMask && r.Voxels[x][y][z] == 0) || r.Voxels[x][y][z] == 255 || overwrite {
 			item := ((y - yOffset) - dstBounds.Min.Y) / srcSize.Y
 			col := (dstBounds.Max.X - x) / srcSize.X
 			row := (z - dstBounds.Min.Z) / srcSize.Z
@@ -229,9 +231,11 @@ func AddRepeated(v magica.VoxelObject, src magica.VoxelObject, n int, inputRamp,
 			sy := (y - (yOffset + dstBounds.Min.Y)) % srcSize.Y
 			sz := (z - dstBounds.Min.Z) % srcSize.Z
 
-			if (n == 0 || item+(col*items)+(row*cols*rows) < n) && ((n == 0 && ignoreTruncation) || (item < items && col < cols && row < rows)) && (y-dstBounds.Min.Y) >= yOffset {
-				r.Voxels[x][y][z] = src.Voxels[sx][sy][sz]
-			} else {
+			if (n == 0 || overwrite || item+(col*items)+(row*cols*rows) < n) && ((n == 0 && ignoreTruncation) || (item < items && col < cols && row < rows)) && (y-dstBounds.Min.Y) >= yOffset {
+				if !overwrite || src.Voxels[sx][sy][sz] != 0 {
+					r.Voxels[x][y][z] = src.Voxels[sx][sy][sz]
+				}
+			} else if !overwrite {
 				r.Voxels[x][y][z] = 0
 			}
 		} else if r.Voxels[x][y][z] != 0 && maskOriginal {

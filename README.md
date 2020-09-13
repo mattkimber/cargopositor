@@ -189,8 +189,13 @@ If this is the case, add the following property to the operation:
 ```
 
 Objects will be copied starting at 0,0. Only empty voxels will be overwritten -
-therefore changin the order in which operations are applied (source and destination)
+therefore changing the order in which operations are applied (source and destination)
 will produce different results.
+
+#### Overwrite
+
+You can force the input object to overwrite non-empty voxels in the source object
+by setting `overwrite` to `true`.
 
 #### Truncate
 
