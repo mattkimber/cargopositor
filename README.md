@@ -215,15 +215,31 @@ the other operations. It allows you to reassign a ramp of colours from
 the input to a new ramp for the output, e.g. to re-colour a pile of
 grain to a pile of copper ore.
 
+Ramps do not have to be the same length, they can be interpolated.
+
 To set up recolouring, add the following lines to the operation:
 
 ```json
-"input_ramp": "3,12",
-"output_ramp": "72,79"
+"input_ramp": "3-12,14-15",
+"output_ramp": "72-79,81-85"
 ```
 
-Colour indexes in the input ramp will be linearly interpolated to the output
+(Note the syntax has changed since older versions of Cargopositor, old-style
+files will be translated where possible)
+
+Colour indexes in each input ramp will be linearly interpolated to the output
 ramp when these are present.
+
+When repeating multiple objects, you can also supply an array using `input_ramps`
+and `output_ramps`. Both must be the same length or the parameter will be ignored.
+Arrays take precedence over single values.
+
+Example of array format:
+
+```json
+"input_ramps": ["3-12", "52-53"],
+"output_ramps": ["72-79", "57-58"]
+```
 
 ### Examples
 

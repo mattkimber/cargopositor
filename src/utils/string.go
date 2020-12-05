@@ -6,7 +6,7 @@ import (
 )
 
 func SplitAndParseToInt(input string) (output []int) {
-	tokens := strings.Split(input, ",")
+	tokens := strings.Split(input, "-")
 	output = make([]int, len(tokens))
 	for i, t := range tokens {
 		val, err := strconv.ParseInt(t, 10, 32)

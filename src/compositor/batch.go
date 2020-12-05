@@ -29,6 +29,8 @@ type Operation struct {
 	File             string          `json:"file"`
 	InputColourRamp  string          `json:"input_ramp"`
 	OutputColourRamp string          `json:"output_ramp"`
+	InputColourRamps  []string       `json:"input_ramps"`
+	OutputColourRamps []string       `json:"output_ramps"`
 	N                int             `json:"n"`
 	XSteps           float64         `json:"x_steps"`
 	ZSteps           int             `json:"z_steps"`
@@ -128,6 +130,11 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 
 		for _, op := range b.Operations {
 
+			if len(op.InputColourRamps) == 0 || len(op.InputColourRamps) != len(op.OutputColourRamps) {
+				op.InputColourRamps = []string{op.InputColourRamp}
+				op.OutputColourRamps = []string{op.InputColourRamp}
+			}
+
 			outputFileName := getOutputFileName(outputDirectory, f, op.Name)
 
 			newer, err := inputFileIsNewerThanOutput(f, voxelDirectory, op.File, outputFileName)
@@ -157,7 +164,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 				if err != nil {
 					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory+op.File, err)
 				}
-				output := AddScaled(input, src, op.InputColourRamp, op.OutputColourRamp, op.Scale, op.Overwrite, op.IgnoreMask, op.MaskOriginal)
+				output := AddScaled(input, src, op.InputColourRamps, op.OutputColourRamps, op.Scale, op.Overwrite, op.IgnoreMask, op.MaskOriginal)
 				if err := saveFile(&output, outputFileName); err != nil {
 					return err
 				}
@@ -166,7 +173,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 				if err != nil {
 					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory+op.File, err)
 				}
-				output := AddRepeated(input, src, op.N, op.InputColourRamp, op.OutputColourRamp, op.Overwrite, op.IgnoreMask, op.Truncate, op.MaskOriginal)
+				output := AddRepeated(input, src, op.N, op.InputColourRamps, op.OutputColourRamps, op.Overwrite, op.IgnoreMask, op.Truncate, op.MaskOriginal)
 				if err := saveFile(&output, outputFileName); err != nil {
 					return err
 				}
