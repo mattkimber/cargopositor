@@ -132,7 +132,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 
 			if len(op.InputColourRamps) == 0 || len(op.InputColourRamps) != len(op.OutputColourRamps) {
 				op.InputColourRamps = []string{op.InputColourRamp}
-				op.OutputColourRamps = []string{op.InputColourRamp}
+				op.OutputColourRamps = []string{op.OutputColourRamp}
 			}
 
 			outputFileName := getOutputFileName(outputDirectory, f, op.Name)
