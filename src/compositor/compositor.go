@@ -236,16 +236,18 @@ func AddRepeated(v magica.VoxelObject, originalSrc magica.VoxelObject, n int, in
 	rows := (dstSize.Z + 1) / srcSize.Z
 
 	yOffset := ((dstSize.Y + 1) - (items * srcSize.Y)) / 2
+	xOffset := ((dstSize.X) - (cols * srcSize.X)) / 2
 
 	if ignoreTruncation {
 		yOffset = 0
+		xOffset = 0
 	}
 
 	var src magica.VoxelObject
 	iterator := func(x, y, z int) {
 		if (ignoreMask && r.Voxels[x][y][z] == 0) || r.Voxels[x][y][z] == 255 || overwrite {
 			item := ((y - yOffset) - dstBounds.Min.Y) / srcSize.Y
-			col := (dstBounds.Max.X - x) / srcSize.X
+			col := (dstBounds.Max.X - (x+(xOffset/2))) / (srcSize.X+xOffset)
 			row := (z - dstBounds.Min.Z) / srcSize.Z
 
 			if item+(col*items)+(row*cols*rows) != lastItem {
@@ -255,13 +257,17 @@ func AddRepeated(v magica.VoxelObject, originalSrc magica.VoxelObject, n int, in
 
 			lastItem = item+(col*items)+(row*cols*rows)
 
-			sx := srcSize.X - 1 - ((dstBounds.Max.X - x) % srcSize.X)
+			sx := srcSize.X - 1 - (((dstBounds.Max.X) - (x+(xOffset/2))) % (srcSize.X + xOffset))
 			sy := (y - (yOffset + dstBounds.Min.Y)) % srcSize.Y
 			sz := (z - dstBounds.Min.Z) % srcSize.Z
 
 			if (n == 0 || overwrite || item+(col*items)+(row*cols*rows) < n) && ((n == 0 && ignoreTruncation) || (item < items && col < cols && row < rows)) && (y-dstBounds.Min.Y) >= yOffset {
-				if !overwrite || src.Voxels[sx][sy][sz] != 0 {
-					r.Voxels[x][y][z] = src.Voxels[sx][sy][sz]
+				if sx < 0 || sx >= srcSize.X {
+					r.Voxels[x][y][z] = 0
+				} else {
+					if !overwrite || src.Voxels[sx][sy][sz] != 0 {
+						r.Voxels[x][y][z] = src.Voxels[sx][sy][sz]
+					}
 				}
 			} else if !overwrite {
 				r.Voxels[x][y][z] = 0
