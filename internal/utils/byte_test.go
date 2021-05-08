@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"geometry"
+	"github.com/mattkimber/gandalf/geometry"
 	"testing"
 )
 

@@ -1,12 +1,12 @@
 package compositor
 
 import (
-	"geometry"
+	"github.com/mattkimber/cargopositor/internal/utils"
+	"github.com/mattkimber/gandalf/geometry"
+	"github.com/mattkimber/gandalf/magica"
 	"log"
-	"magica"
 	"math"
 	"strings"
-	"utils"
 )
 
 func getBounds(v *magica.VoxelObject, ignoreMask bool) geometry.Bounds {
@@ -59,6 +59,12 @@ func ProduceEmpty(v magica.VoxelObject) (r magica.VoxelObject) {
 
 	r.Iterate(iterator)
 
+	return r
+}
+
+// Return the base object without any changes at all
+func Identity(v magica.VoxelObject) (r magica.VoxelObject) {
+	r = v.Copy()
 	return r
 }
 
@@ -413,6 +419,57 @@ func RotateY(v magica.VoxelObject, angle float64) (r magica.VoxelObject) {
 
 	return r
 }
+
+
+// Rotate an object around its Z axis, from the bottom
+func RotateZ(v magica.VoxelObject, angle float64) (r magica.VoxelObject) {
+	sin, cos := math.Sin(degToRad(angle)), math.Cos(degToRad(angle))
+
+	orgMidpointY := float64(v.Size.Y) / 2
+	orgMidpointZ := float64(v.Size.Z) / 2
+
+	zVector := (orgMidpointY * math.Abs(sin)) + (orgMidpointZ * math.Abs(cos))
+	yVector := (orgMidpointY * math.Abs(cos)) + (orgMidpointZ * math.Abs(sin))
+
+	sizeZ, sizeY := int(math.Ceil(zVector*2)), int(math.Ceil(yVector*2))
+
+	r = magica.VoxelObject{
+		Voxels:      nil,
+		PaletteData: v.PaletteData,
+		Size:        geometry.Point{X: v.Size.X, Y: sizeY, Z: sizeZ},
+	}
+
+	// Create the voxel array
+	r.Voxels = make([][][]byte, r.Size.X)
+	for x := 0; x < r.Size.X; x++ {
+		r.Voxels[x] = make([][]byte, r.Size.Y)
+		for y := 0; y < r.Size.Y; y++ {
+			r.Voxels[x][y] = make([]byte, r.Size.Z)
+		}
+	}
+
+	vMidpointY := float64(v.Size.Y) / 2
+
+	iterator := func(x, y, z int) {
+
+		fdy := float64(y)  - (float64(r.Size.Y) / 2)
+		fdz := float64(z)
+
+		fdy, fdz = (fdy*cos)+(fdz*sin), (fdy*-sin)+(fdz*cos)
+
+		dy := int(math.Ceil(fdy + vMidpointY))
+		dz := int(math.Ceil(fdz))
+
+		if dy >= 0 && dz >= 0 && dy < v.Size.Y && dz < v.Size.Z {
+			r.Voxels[x][y][z] = v.Voxels[x][dy][dz]
+		}
+	}
+
+	r.Iterate(iterator)
+
+	return r
+}
+
 
 func degToRad(angle float64) float64 {
 	return (angle / 180.0) * math.Pi

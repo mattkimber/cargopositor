@@ -3,10 +3,10 @@ package compositor
 import (
 	"encoding/json"
 	"fmt"
-	"geometry"
+	"github.com/mattkimber/gandalf/geometry"
+	"github.com/mattkimber/gandalf/magica"
 	"io"
 	"io/ioutil"
-	"magica"
 	"os"
 	"path"
 	"path/filepath"
@@ -43,6 +43,7 @@ type Operation struct {
 	Scale            geometry.PointF `json:"scale"`
 	BoundingVolume   BoundingVolume  `json:"bounding_volume"`
 	Overwrite        bool            `json:"overwrite"`
+	Layers           []int           `json:"layers"`
 }
 
 func FromJson(handle io.Reader) (b Batch, err error) {
@@ -146,14 +147,19 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 				continue
 			}
 
-			if input.Size.X == 0 && input.Size.Y == 0 && input.Size.Z == 0 {
-				input, err = magica.FromFile(f)
+			if (input.Size.X == 0 && input.Size.Y == 0 && input.Size.Z == 0) || len(op.Layers) > 0 {
+				input, err = magica.FromFileWithLayers(f, op.Layers)
 				if err != nil {
 					return fmt.Errorf("could not open input file %s: %v", f, err)
 				}
 			}
 
 			switch op.Type {
+			case "identity":
+				output := Identity(input)
+				if err := saveFile(&output, outputFileName); err != nil {
+					return err
+				}
 			case "produce_empty":
 				output := ProduceEmpty(input)
 				if err := saveFile(&output, outputFileName); err != nil {
@@ -189,6 +195,11 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 				}
 			case "rotate_y":
 				output := RotateY(input, op.Angle)
+				if err := saveFile(&output, outputFileName); err != nil {
+					return err
+				}
+			case "rotate_z":
+				output := RotateZ(input, op.Angle)
 				if err := saveFile(&output, outputFileName); err != nil {
 					return err
 				}

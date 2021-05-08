@@ -1,9 +1,9 @@
 package main
 
 import (
-	"compositor"
 	"flag"
 	"fmt"
+	"github.com/mattkimber/cargopositor/internal/compositor"
 	"log"
 	"os"
 	"runtime/pprof"

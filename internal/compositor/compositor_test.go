@@ -2,11 +2,11 @@ package compositor
 
 import (
 	"bytes"
-	"geometry"
-	"magica"
+	"github.com/mattkimber/cargopositor/internal/utils"
+	"github.com/mattkimber/gandalf/geometry"
+	"github.com/mattkimber/gandalf/magica"
 	"os"
 	"testing"
-	"utils"
 )
 
 func Test_getBounds(t *testing.T) {
@@ -95,6 +95,26 @@ func TestProduceEmpty(t *testing.T) {
 	testOperation(t, fn, "testdata/produce_empty.vox")
 }
 
+
+func TestIdentity(t *testing.T) {
+	fn := func(v magica.VoxelObject) magica.VoxelObject { return Identity(v) }
+	testOperation(t, fn, "testdata/identity.vox")
+}
+
+
+func TestLayers(t *testing.T) {
+	fn := func(v magica.VoxelObject) magica.VoxelObject { return Identity(v) }
+	testOperationWithInputFilenameAndLayers(t, fn, "testdata/layer_0_output.vox", "testdata/example_input_layers.vox", []int{0})
+	testOperationWithInputFilenameAndLayers(t, fn, "testdata/layer_1_output.vox", "testdata/example_input_layers.vox", []int{1})
+	testOperationWithInputFilenameAndLayers(t, fn, "testdata/layer_2_output.vox", "testdata/example_input_layers.vox", []int{2})
+	testOperationWithInputFilenameAndLayers(t, fn, "testdata/layer_3_output.vox", "testdata/example_input_layers.vox", []int{3})
+	testOperationWithInputFilenameAndLayers(t, fn, "testdata/layer_4_output.vox", "testdata/example_input_layers.vox", []int{4})
+
+	testOperationWithInputFilenameAndLayers(t, fn, "testdata/layer_012_output.vox", "testdata/example_input_layers.vox", []int{0,1,2})
+	testOperationWithInputFilenameAndLayers(t, fn, "testdata/layer_023_output.vox", "testdata/example_input_layers.vox", []int{0,2,3})
+}
+
+
 func TestStairstep(t *testing.T) {
 	fn := func(v magica.VoxelObject) magica.VoxelObject { return Stairstep(v, 4, 1) }
 	testOperationWithInputFilename(t, fn, "testdata/stairstep_output.vox", "testdata/stairstep.vox")
@@ -147,12 +167,45 @@ func TestRotateY(t *testing.T) {
 
 }
 
+
+func TestRotateZ(t *testing.T) {
+	fn := func(v magica.VoxelObject) magica.VoxelObject {
+		return RotateZ(v, 0)
+	}
+	testOperationWithInputFilename(t, fn, "testdata/rotate_z_output_0.vox", "testdata/rotate_z_input.vox")
+
+	fn = func(v magica.VoxelObject) magica.VoxelObject {
+		return RotateZ(v, 5)
+	}
+	testOperationWithInputFilename(t, fn, "testdata/rotate_z_output_5.vox", "testdata/rotate_z_input.vox")
+
+	fn = func(v magica.VoxelObject) magica.VoxelObject {
+		return RotateZ(v, 45)
+	}
+	testOperationWithInputFilename(t, fn, "testdata/rotate_z_output_45.vox", "testdata/rotate_z_input.vox")
+
+	fn = func(v magica.VoxelObject) magica.VoxelObject {
+		return RotateZ(v, -30)
+	}
+	testOperationWithInputFilename(t, fn, "testdata/rotate_z_output_30.vox", "testdata/rotate_z_input.vox")
+
+	fn = func(v magica.VoxelObject) magica.VoxelObject {
+		return RotateZ(v, 90)
+	}
+	testOperationWithInputFilename(t, fn, "testdata/rotate_z_output_90.vox", "testdata/rotate_z_input.vox")
+
+}
+
 func testOperation(t *testing.T, op func(v magica.VoxelObject) magica.VoxelObject, filename string) {
 	testOperationWithInputFilename(t, op, filename, "testdata/example_input.vox")
 }
 
 func testOperationWithInputFilename(t *testing.T, op func(v magica.VoxelObject) magica.VoxelObject, filename, inputFilename string) {
-	input, err := magica.FromFile(inputFilename)
+	testOperationWithInputFilenameAndLayers(t, op, filename, inputFilename, []int{})
+}
+
+func testOperationWithInputFilenameAndLayers(t *testing.T, op func(v magica.VoxelObject) magica.VoxelObject, filename, inputFilename string, layers []int) {
+	input, err := magica.FromFileWithLayers(inputFilename, layers)
 	if err != nil {
 		t.Errorf("Could not read object: %v", err)
 	}
@@ -177,7 +230,7 @@ func testOperationWithInputFilename(t *testing.T, op func(v magica.VoxelObject) 
 	}
 
 	if !result {
-		t.Errorf("Output did not equal expected")
+		t.Errorf("Output %s did not equal expected", filename)
 	}
 }
 

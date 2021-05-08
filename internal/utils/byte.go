@@ -2,7 +2,7 @@ package utils
 
 import (
 	"bytes"
-	"geometry"
+	"github.com/mattkimber/gandalf/geometry"
 	"io/ioutil"
 	"os"
 )

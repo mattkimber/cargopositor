@@ -46,6 +46,14 @@ to indicate areas which can be replaced with the various cargo elements.
 
 The following operations are supported:
 
+#### identity
+
+Does nothing to the object. However, this can be used with the `layers` parameter
+to only load certain layers from the input object, which will then result in all
+other layers being removed from the output. This is useful for, e.g. storing all
+frames of an animation in the same voxel file and using CargoPositor to split them
+for rendering.
+
 #### produce_empty
 
 Remove all Cargopositor-specific behaviour voxels from the object. This is
