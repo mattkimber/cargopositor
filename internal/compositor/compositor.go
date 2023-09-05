@@ -15,7 +15,7 @@ func getBounds(v *magica.VoxelObject, ignoreMask bool) geometry.Bounds {
 	maxP := geometry.Point{}
 
 	if ignoreMask {
-		return geometry.Bounds{Min: maxP, Max: minP}
+		return geometry.Bounds{Min: maxP, Max: geometry.Point{X: v.Size.X - 1, Y: v.Size.Y - 1, Z: v.Size.Z - 1}}
 	}
 
 	iterator := func(x, y, z int) {
