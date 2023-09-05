@@ -43,7 +43,7 @@ func TestAddScaledWithSize(t *testing.T) {
 	}
 
 	fn := func(v magica.VoxelObject) magica.VoxelObject {
-		return AddScaled(v, src, []string{"2,16"}, []string{"72,79"}, geometry.PointF{X: 1.0, Z: 1.0}, false, false, false)
+		return AddScaled(v, src, []string{"2,16"}, []string{"72,79"}, geometry.PointF{X: 1.0, Z: 1.0}, false, false, false, false)
 	}
 	testOperation(t, fn, "testdata/not_scaled.vox")
 }
@@ -55,7 +55,7 @@ func TestAddScaled(t *testing.T) {
 	}
 
 	fn := func(v magica.VoxelObject) magica.VoxelObject {
-		return AddScaled(v, src, []string{"2-16"}, []string{"72,79"}, geometry.PointF{}, false, false, false)
+		return AddScaled(v, src, []string{"2-16"}, []string{"72,79"}, geometry.PointF{}, false, false, false, false)
 	}
 	testOperation(t, fn, "testdata/scaled.vox")
 }
@@ -80,7 +80,7 @@ func testAddRepeatedInner(t *testing.T, n int, input, expected string, inputFile
 	}
 
 	fn := func(v magica.VoxelObject) magica.VoxelObject {
-		return AddRepeated(v, src, n, []string{"2-16","254-255"}, []string{"72-79","1-7"}, false, ignoreMask, ignoreTruncate, false)
+		return AddRepeated(v, src, n, []string{"2-16", "254-255"}, []string{"72-79", "1-7"}, false, ignoreMask, ignoreTruncate, false, false, false)
 	}
 	testOperationWithInputFilename(t, fn, expected, inputFilename)
 }
@@ -95,12 +95,10 @@ func TestProduceEmpty(t *testing.T) {
 	testOperation(t, fn, "testdata/produce_empty.vox")
 }
 
-
 func TestIdentity(t *testing.T) {
 	fn := func(v magica.VoxelObject) magica.VoxelObject { return Identity(v) }
 	testOperation(t, fn, "testdata/identity.vox")
 }
-
 
 func TestLayers(t *testing.T) {
 	fn := func(v magica.VoxelObject) magica.VoxelObject { return Identity(v) }
@@ -110,10 +108,9 @@ func TestLayers(t *testing.T) {
 	testOperationWithInputFilenameAndLayers(t, fn, "testdata/layer_3_output.vox", "testdata/example_input_layers.vox", []int{3})
 	testOperationWithInputFilenameAndLayers(t, fn, "testdata/layer_4_output.vox", "testdata/example_input_layers.vox", []int{4})
 
-	testOperationWithInputFilenameAndLayers(t, fn, "testdata/layer_012_output.vox", "testdata/example_input_layers.vox", []int{0,1,2})
-	testOperationWithInputFilenameAndLayers(t, fn, "testdata/layer_023_output.vox", "testdata/example_input_layers.vox", []int{0,2,3})
+	testOperationWithInputFilenameAndLayers(t, fn, "testdata/layer_012_output.vox", "testdata/example_input_layers.vox", []int{0, 1, 2})
+	testOperationWithInputFilenameAndLayers(t, fn, "testdata/layer_023_output.vox", "testdata/example_input_layers.vox", []int{0, 2, 3})
 }
-
 
 func TestStairstep(t *testing.T) {
 	fn := func(v magica.VoxelObject) magica.VoxelObject { return Stairstep(v, 4, 1) }
@@ -166,7 +163,6 @@ func TestRotateY(t *testing.T) {
 	testOperationWithInputFilename(t, fn, "testdata/rotate_y_output_90.vox", "testdata/rotate_y_input.vox")
 
 }
-
 
 func TestRotateZ(t *testing.T) {
 	fn := func(v magica.VoxelObject) magica.VoxelObject {

@@ -24,26 +24,28 @@ type BoundingVolume struct {
 }
 
 type Operation struct {
-	Name             string          `json:"name"`
-	Type             string          `json:"type"`
-	File             string          `json:"file"`
-	InputColourRamp  string          `json:"input_ramp"`
-	OutputColourRamp string          `json:"output_ramp"`
-	InputColourRamps  []string       `json:"input_ramps"`
-	OutputColourRamps []string       `json:"output_ramps"`
-	N                int             `json:"n"`
-	XSteps           float64         `json:"x_steps"`
-	ZSteps           int             `json:"z_steps"`
-	Angle            float64         `json:"angle"`
-	XOffset          int             `json:"x_offset"`
-	YOffset          int             `json:"y_offset"`
-	IgnoreMask       bool            `json:"ignore_mask"`
-	Truncate         bool            `json:"truncate"`
-	MaskOriginal     bool            `json:"mask_original"`
-	Scale            geometry.PointF `json:"scale"`
-	BoundingVolume   BoundingVolume  `json:"bounding_volume"`
-	Overwrite        bool            `json:"overwrite"`
-	Layers           []int           `json:"layers"`
+	Name              string          `json:"name"`
+	Type              string          `json:"type"`
+	File              string          `json:"file"`
+	InputColourRamp   string          `json:"input_ramp"`
+	OutputColourRamp  string          `json:"output_ramp"`
+	InputColourRamps  []string        `json:"input_ramps"`
+	OutputColourRamps []string        `json:"output_ramps"`
+	N                 int             `json:"n"`
+	XSteps            float64         `json:"x_steps"`
+	ZSteps            int             `json:"z_steps"`
+	Angle             float64         `json:"angle"`
+	XOffset           int             `json:"x_offset"`
+	YOffset           int             `json:"y_offset"`
+	IgnoreMask        bool            `json:"ignore_mask"`
+	Truncate          bool            `json:"truncate"`
+	MaskOriginal      bool            `json:"mask_original"`
+	FlipX             bool            `json:"flip_x"`
+	MaskNew           bool            `json:"mask_new"`
+	Scale             geometry.PointF `json:"scale"`
+	BoundingVolume    BoundingVolume  `json:"bounding_volume"`
+	Overwrite         bool            `json:"overwrite"`
+	Layers            []int           `json:"layers"`
 }
 
 func FromJson(handle io.Reader) (b Batch, err error) {
@@ -170,7 +172,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 				if err != nil {
 					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory+op.File, err)
 				}
-				output := AddScaled(input, src, op.InputColourRamps, op.OutputColourRamps, op.Scale, op.Overwrite, op.IgnoreMask, op.MaskOriginal)
+				output := AddScaled(input, src, op.InputColourRamps, op.OutputColourRamps, op.Scale, op.Overwrite, op.IgnoreMask, op.MaskOriginal, op.MaskNew)
 				if err := saveFile(&output, outputFileName); err != nil {
 					return err
 				}
@@ -179,7 +181,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 				if err != nil {
 					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory+op.File, err)
 				}
-				output := AddRepeated(input, src, op.N, op.InputColourRamps, op.OutputColourRamps, op.Overwrite, op.IgnoreMask, op.Truncate, op.MaskOriginal)
+				output := AddRepeated(input, src, op.N, op.InputColourRamps, op.OutputColourRamps, op.Overwrite, op.IgnoreMask, op.Truncate, op.MaskOriginal, op.MaskNew, op.FlipX)
 				if err := saveFile(&output, outputFileName); err != nil {
 					return err
 				}

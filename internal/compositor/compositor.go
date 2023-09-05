@@ -11,42 +11,42 @@ import (
 
 func getBounds(v *magica.VoxelObject, ignoreMask bool) geometry.Bounds {
 
-	min := geometry.Point{X: v.Size.X, Y: v.Size.Y, Z: v.Size.Z}
-	max := geometry.Point{}
+	minP := geometry.Point{X: v.Size.X, Y: v.Size.Y, Z: v.Size.Z}
+	maxP := geometry.Point{}
 
 	if ignoreMask {
-		return geometry.Bounds{Min: max, Max: min}
+		return geometry.Bounds{Min: maxP, Max: minP}
 	}
 
 	iterator := func(x, y, z int) {
 		if v.Voxels[x][y][z] == 255 {
-			if x < min.X {
-				min.X = x
+			if x < minP.X {
+				minP.X = x
 			}
-			if y < min.Y {
-				min.Y = y
+			if y < minP.Y {
+				minP.Y = y
 			}
-			if z < min.Z {
-				min.Z = z
+			if z < minP.Z {
+				minP.Z = z
 			}
-			if x > max.X {
-				max.X = x
+			if x > maxP.X {
+				maxP.X = x
 			}
-			if y > max.Y {
-				max.Y = y
+			if y > maxP.Y {
+				maxP.Y = y
 			}
-			if z > max.Z {
-				max.Z = z
+			if z > maxP.Z {
+				maxP.Z = z
 			}
 		}
 	}
 
 	v.Iterate(iterator)
 
-	return geometry.Bounds{Min: min, Max: max}
+	return geometry.Bounds{Min: minP, Max: maxP}
 }
 
-// Return the base object without any cargo
+// ProduceEmpty returns the base object without any cargo
 // (remove special voxels)
 func ProduceEmpty(v magica.VoxelObject) (r magica.VoxelObject) {
 	r = v.Copy()
@@ -62,7 +62,7 @@ func ProduceEmpty(v magica.VoxelObject) (r magica.VoxelObject) {
 	return r
 }
 
-// Return the base object without any changes at all
+// Identity returns the base object without any changes at all
 func Identity(v magica.VoxelObject) (r magica.VoxelObject) {
 	r = v.Copy()
 	return r
@@ -148,12 +148,12 @@ func Stairstep(v magica.VoxelObject, m float64, n int) (r magica.VoxelObject) {
 	return
 }
 
-// Scale a cargo object to the cargo area
-func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamps, outputRamps []string, scaleLogic geometry.PointF, overwrite bool, ignoreMask bool, maskOriginal bool) (r magica.VoxelObject) {
+// AddScaled scales a cargo object to the cargo area
+func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamps, outputRamps []string, scaleLogic geometry.PointF, overwrite bool, ignoreMask bool, maskOriginal bool, maskNew bool) (r magica.VoxelObject) {
 	r = dst.Copy()
 
 	// If there is an input/output ramp, we always use the first one when scaling
-	if len(inputRamps) > 0 && len(outputRamps) > 0{
+	if len(inputRamps) > 0 && len(outputRamps) > 0 {
 		src = Recolour(src, inputRamps[0], outputRamps[0])
 	}
 
@@ -178,7 +178,7 @@ func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamps, outpu
 			maxZ := byte(math.Ceil(float64((z+1)-dstBounds.Min.Z) * scale.Z))
 
 			values := map[byte]int{}
-			max, modalIndex := 0, byte(0)
+			maxIndexCount, modalIndex := 0, byte(0)
 
 			for i := minX; i < maxX; i++ {
 				for j := minY; j < maxY; j++ {
@@ -195,10 +195,14 @@ func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamps, outpu
 			}
 
 			for k, v := range values {
-				if v > max {
-					max = v
+				if v > maxIndexCount {
+					maxIndexCount = v
 					modalIndex = k
 				}
+			}
+
+			if maskNew && modalIndex != 0 {
+				modalIndex = 255
 			}
 
 			if !overwrite || modalIndex != 0 {
@@ -214,8 +218,8 @@ func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamps, outpu
 	return r
 }
 
-// Repeat a cargo object across the cargo area up to n times
-func AddRepeated(v magica.VoxelObject, originalSrc magica.VoxelObject, n int, inputRamps, outputRamps []string, overwrite bool, ignoreMask bool, ignoreTruncation bool, maskOriginal bool) (r magica.VoxelObject) {
+// AddRepeated repeats a cargo object across the cargo area up to n times
+func AddRepeated(v magica.VoxelObject, originalSrc magica.VoxelObject, n int, inputRamps, outputRamps []string, overwrite bool, ignoreMask bool, ignoreTruncation bool, maskOriginal bool, maskNew bool, flipX bool) (r magica.VoxelObject) {
 	r = v.Copy()
 
 	dstBounds := getBounds(&r, ignoreMask)
@@ -225,11 +229,10 @@ func AddRepeated(v magica.VoxelObject, originalSrc magica.VoxelObject, n int, in
 	lastItem := -1
 	ramps := len(inputRamps)
 
-
 	// Create all the necessary recolour objects
-	srcObjects := make([]magica.VoxelObject,ramps)
+	srcObjects := make([]magica.VoxelObject, ramps)
 	if ramps > 0 && len(inputRamps) == len(outputRamps) {
-		for idx, _ := range inputRamps {
+		for idx := range inputRamps {
 			srcObjects[idx] = Recolour(originalSrc, inputRamps[idx], outputRamps[idx])
 		}
 	} else {
@@ -250,20 +253,25 @@ func AddRepeated(v magica.VoxelObject, originalSrc magica.VoxelObject, n int, in
 	}
 
 	var src magica.VoxelObject
+
 	iterator := func(x, y, z int) {
 		if (ignoreMask && r.Voxels[x][y][z] == 0) || r.Voxels[x][y][z] == 255 || overwrite {
 			item := ((y - yOffset) - dstBounds.Min.Y) / srcSize.Y
-			col := (dstBounds.Max.X - (x+(xOffset/2))) / (srcSize.X+xOffset)
+			col := (dstBounds.Max.X - (x + (xOffset / 2))) / (srcSize.X + xOffset)
 			row := (z - dstBounds.Min.Z) / srcSize.Z
 
 			if item+(col*items)+(row*cols*rows) != lastItem {
 				// Pick the recolour ramp for this item
-				src = srcObjects[(item+(col*items)+(row*cols*rows)) % ramps]
+				src = srcObjects[(item+(col*items)+(row*cols*rows))%ramps]
 			}
 
-			lastItem = item+(col*items)+(row*cols*rows)
+			lastItem = item + (col * items) + (row * cols * rows)
 
-			sx := srcSize.X - 1 - (((dstBounds.Max.X) - (x+(xOffset/2))) % (srcSize.X + xOffset))
+			sx := srcSize.X - 1 - (((dstBounds.Max.X) - (x + (xOffset / 2))) % (srcSize.X + xOffset))
+
+			if flipX {
+				sx = (x - dstBounds.Min.X) % srcSize.X
+			}
 			sy := (y - (yOffset + dstBounds.Min.Y)) % srcSize.Y
 			sz := (z - dstBounds.Min.Z) % srcSize.Z
 
@@ -272,7 +280,15 @@ func AddRepeated(v magica.VoxelObject, originalSrc magica.VoxelObject, n int, in
 					r.Voxels[x][y][z] = 0
 				} else {
 					if !overwrite || src.Voxels[sx][sy][sz] != 0 {
-						r.Voxels[x][y][z] = src.Voxels[sx][sy][sz]
+						if maskNew {
+							if src.Voxels[sx][sy][sz] == 0 {
+								r.Voxels[x][y][z] = 0
+							} else {
+								r.Voxels[x][y][z] = 255
+							}
+						} else {
+							r.Voxels[x][y][z] = src.Voxels[sx][sy][sz]
+						}
 					}
 				}
 			} else if !overwrite {
@@ -303,10 +319,10 @@ func Remove(v magica.VoxelObject, src magica.VoxelObject, index uint8) (r magica
 }
 
 type Ramp struct {
-	InputLength float64
-	OutputLength float64
-	StartIndex int
-	EndIndex int
+	InputLength      float64
+	OutputLength     float64
+	StartIndex       int
+	EndIndex         int
 	OutputStartIndex int
 }
 
@@ -319,7 +335,7 @@ func Recolour(v magica.VoxelObject, inputRamp, outputRamp string) (r magica.Voxe
 	}
 
 	// Deal with the old GoRender format
-	if !strings.ContainsRune(inputRamp, '-') && !strings.ContainsRune(outputRamp, '-'){
+	if !strings.ContainsRune(inputRamp, '-') && !strings.ContainsRune(outputRamp, '-') {
 		inputRamp = strings.Replace(inputRamp, ",", "-", -1)
 		outputRamp = strings.Replace(outputRamp, ",", "-", -1)
 	}
@@ -334,7 +350,7 @@ func Recolour(v magica.VoxelObject, inputRamp, outputRamp string) (r magica.Voxe
 
 	ramps := make([]Ramp, len(inputRamps))
 
-	for idx, _ := range inputRamps {
+	for idx := range inputRamps {
 		inputs, outputs := utils.SplitAndParseToInt(inputRamps[idx]), utils.SplitAndParseToInt(outputRamps[idx])
 
 		if len(inputs) < 2 || len(outputs) < 2 {
@@ -343,10 +359,10 @@ func Recolour(v magica.VoxelObject, inputRamp, outputRamp string) (r magica.Voxe
 		}
 
 		ramps[idx] = Ramp{
-			InputLength:  float64(inputs[1]-inputs[0]),
-			OutputLength: float64(outputs[1]-outputs[0]),
-			StartIndex: inputs[0],
-			EndIndex:   inputs[1],
+			InputLength:      float64(inputs[1] - inputs[0]),
+			OutputLength:     float64(outputs[1] - outputs[0]),
+			StartIndex:       inputs[0],
+			EndIndex:         inputs[1],
 			OutputStartIndex: outputs[0],
 		}
 
@@ -356,7 +372,7 @@ func Recolour(v magica.VoxelObject, inputRamp, outputRamp string) (r magica.Voxe
 		c := r.Voxels[x][y][z]
 		for _, rmp := range ramps {
 			if c >= byte(rmp.StartIndex) && c <= byte(rmp.EndIndex) {
-				output :=rmp.OutputStartIndex + int(math.Round((float64(int(c)-rmp.StartIndex)/rmp.InputLength)*rmp.OutputLength))
+				output := rmp.OutputStartIndex + int(math.Round((float64(int(c)-rmp.StartIndex)/rmp.InputLength)*rmp.OutputLength))
 				r.Voxels[x][y][z] = byte(output)
 
 				// Only apply the first ramp we find (don't repeatedly map colours)
@@ -370,7 +386,7 @@ func Recolour(v magica.VoxelObject, inputRamp, outputRamp string) (r magica.Voxe
 	return r
 }
 
-// Rotate an object around its Y axis
+// RotateY Rotates an object around its Y axis
 func RotateY(v magica.VoxelObject, angle float64) (r magica.VoxelObject) {
 	sin, cos := math.Sin(degToRad(angle)), math.Cos(degToRad(angle))
 
@@ -420,8 +436,7 @@ func RotateY(v magica.VoxelObject, angle float64) (r magica.VoxelObject) {
 	return r
 }
 
-
-// Rotate an object around its Z axis, from the bottom
+// RotateZ rotates an object around its Z axis, from the bottom
 func RotateZ(v magica.VoxelObject, angle float64) (r magica.VoxelObject) {
 	sin, cos := math.Sin(degToRad(angle)), math.Cos(degToRad(angle))
 
@@ -452,7 +467,7 @@ func RotateZ(v magica.VoxelObject, angle float64) (r magica.VoxelObject) {
 
 	iterator := func(x, y, z int) {
 
-		fdy := float64(y)  - (float64(r.Size.Y) / 2)
+		fdy := float64(y) - (float64(r.Size.Y) / 2)
 		fdz := float64(z)
 
 		fdy, fdz = (fdy*cos)+(fdz*sin), (fdy*-sin)+(fdz*cos)
@@ -469,7 +484,6 @@ func RotateZ(v magica.VoxelObject, angle float64) (r magica.VoxelObject) {
 
 	return r
 }
-
 
 func degToRad(angle float64) float64 {
 	return (angle / 180.0) * math.Pi

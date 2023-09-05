@@ -216,6 +216,18 @@ When using repeat, you can set all voxels of the original object that are *not* 
 clip area to 255 by setting `mask_original` to `true`. This is useful for generating
 overlay sprites with GoRender, by rendering just the pixels which should be overlaid.
 
+#### Mask New
+
+Similar to `mask_original`, but this will instead set all voxels of the *new* object to 255.
+This is useful when you want to overlay things to allow rendering sprites occluded by other
+objects.
+
+#### Flip X Axis
+
+When using repeat, you can set `flip_x` to `true`, and the object will be composited flipped
+in X. This is useful when compositing objects which are intended to be overlaid with the
+rear of another object.
+
 #### Recolouring
 
 Recolouring is not an operation in itself but is supported by some of
