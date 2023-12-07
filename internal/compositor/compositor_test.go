@@ -91,7 +91,7 @@ func TestRecolour(t *testing.T) {
 }
 
 func TestProduceEmpty(t *testing.T) {
-	fn := func(v magica.VoxelObject) magica.VoxelObject { return ProduceEmpty(v) }
+	fn := func(v magica.VoxelObject) magica.VoxelObject { return ProduceEmpty(v, nil, nil) }
 	testOperation(t, fn, "testdata/produce_empty.vox")
 }
 

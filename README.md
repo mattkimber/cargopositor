@@ -60,6 +60,8 @@ Remove all Cargopositor-specific behaviour voxels from the object. This is
 useful for producing the "base" object, so you do not need two files for
 "with cargo" and "without cargo" models.
 
+Supports recolouring.
+
 #### scale
 
 Scales the input across the cargo area. This is most useful for bulk cargo

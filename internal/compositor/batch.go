@@ -163,7 +163,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 					return err
 				}
 			case "produce_empty":
-				output := ProduceEmpty(input)
+				output := ProduceEmpty(input, op.InputColourRamps, op.OutputColourRamps)
 				if err := saveFile(&output, outputFileName); err != nil {
 					return err
 				}

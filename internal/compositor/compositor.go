@@ -48,8 +48,12 @@ func getBounds(v *magica.VoxelObject, ignoreMask bool) geometry.Bounds {
 
 // ProduceEmpty returns the base object without any cargo
 // (remove special voxels)
-func ProduceEmpty(v magica.VoxelObject) (r magica.VoxelObject) {
+func ProduceEmpty(v magica.VoxelObject, inputRamps, outputRamps []string) (r magica.VoxelObject) {
 	r = v.Copy()
+
+	if len(inputRamps) > 0 && len(outputRamps) > 0 {
+		r = Recolour(r, inputRamps[0], outputRamps[0])
+	}
 
 	iterator := func(x, y, z int) {
 		if r.Voxels[x][y][z] == 255 {
