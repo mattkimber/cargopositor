@@ -45,6 +45,7 @@ type Operation struct {
 	Scale             geometry.PointF `json:"scale"`
 	BoundingVolume    BoundingVolume  `json:"bounding_volume"`
 	Overwrite         bool            `json:"overwrite"`
+	BlendMode         string          `json:"blend_mode"`
 	Layers            []int           `json:"layers"`
 }
 
@@ -181,7 +182,7 @@ func (b *Batch) Run(outputDirectory, voxelDirectory string) (err error) {
 				if err != nil {
 					return fmt.Errorf("error opening voxel file %s: %v", voxelDirectory+op.File, err)
 				}
-				output := AddRepeated(input, src, op.N, op.InputColourRamps, op.OutputColourRamps, op.Overwrite, op.IgnoreMask, op.Truncate, op.MaskOriginal, op.MaskNew, op.FlipX)
+				output := AddRepeated(input, src, op.N, op.InputColourRamps, op.OutputColourRamps, op.Overwrite, op.BlendMode, op.IgnoreMask, op.Truncate, op.MaskOriginal, op.MaskNew, op.FlipX)
 				if err := saveFile(&output, outputFileName); err != nil {
 					return err
 				}

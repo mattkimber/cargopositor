@@ -223,7 +223,7 @@ func AddScaled(dst magica.VoxelObject, src magica.VoxelObject, inputRamps, outpu
 }
 
 // AddRepeated repeats a cargo object across the cargo area up to n times
-func AddRepeated(v magica.VoxelObject, originalSrc magica.VoxelObject, n int, inputRamps, outputRamps []string, overwrite bool, ignoreMask bool, ignoreTruncation bool, maskOriginal bool, maskNew bool, flipX bool) (r magica.VoxelObject) {
+func AddRepeated(v magica.VoxelObject, originalSrc magica.VoxelObject, n int, inputRamps, outputRamps []string, overwrite bool, blendMode string, ignoreMask bool, ignoreTruncation bool, maskOriginal bool, maskNew bool, flipX bool) (r magica.VoxelObject) {
 	r = v.Copy()
 
 	dstBounds := getBounds(&r, ignoreMask)
@@ -283,7 +283,7 @@ func AddRepeated(v magica.VoxelObject, originalSrc magica.VoxelObject, n int, in
 				if sx < 0 || sx >= srcSize.X {
 					r.Voxels[x][y][z] = 0
 				} else {
-					if !overwrite || src.Voxels[sx][sy][sz] != 0 {
+					if !overwrite || src.Voxels[sx][sy][sz] != 0 || blendMode == "in" || blendMode == "out" {
 						if maskNew {
 							if src.Voxels[sx][sy][sz] == 0 {
 								r.Voxels[x][y][z] = 0
@@ -291,7 +291,32 @@ func AddRepeated(v magica.VoxelObject, originalSrc magica.VoxelObject, n int, in
 								r.Voxels[x][y][z] = 255
 							}
 						} else {
-							r.Voxels[x][y][z] = src.Voxels[sx][sy][sz]
+							if blendMode == "in" {
+								if r.Voxels[x][y][z] != 0 && src.Voxels[sx][sy][sz] != 0 {
+									r.Voxels[x][y][z] = src.Voxels[sx][sy][sz]
+								} else {
+									r.Voxels[x][y][z] = 0
+								}
+							} else if blendMode == "out" {
+								if r.Voxels[x][y][z] == 0 && src.Voxels[sx][sy][sz] != 0 {
+									r.Voxels[x][y][z] = src.Voxels[sx][sy][sz]
+								} else {
+									r.Voxels[x][y][z] = 0
+								}
+							} else if blendMode == "atop" {
+								if r.Voxels[x][y][z] != 0 {
+									r.Voxels[x][y][z] = src.Voxels[sx][sy][sz]
+								}
+							} else if blendMode == "xor" {
+								if r.Voxels[x][y][z] != 0 {
+									r.Voxels[x][y][z] = 0
+								} else {
+									r.Voxels[x][y][z] = src.Voxels[sx][sy][sz]
+								}
+							} else {
+								// default to "over" mode
+								r.Voxels[x][y][z] = src.Voxels[sx][sy][sz]
+							}
 						}
 					}
 				}
